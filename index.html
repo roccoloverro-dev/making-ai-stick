@@ -1,0 +1,2747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Making AI Stick Simulation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A round-by-round change management simulation for the Making AI Stick course, scored on the Six Conditions of Durable Change.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@400..800&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one centered column on plain white, a sticky status bar while playing, cards only for levers and choices.
+   Single light theme by design: the course asked for a plain white background throughout. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --ink: #141a22;
+  --ink-2: #47505d;
+  --ink-3: #66707e;
+  --line: #e3e7ed;
+  --line-2: #cbd3dd;
+  --wash: #f4f6f9;
+  --accent: #1c5cab;
+  --accent-hover: #164c8f;
+  --accent-soft: #eaf1fb;
+  --accent-line: #b6cdeb;
+  --good: #146c2e;
+  --good-dot: #1f9d48;
+  --good-soft: #e8f5ec;
+  --steady: #3a5a7a;
+  --steady-dot: #6f8fae;
+  --steady-soft: #edf2f7;
+  --warn: #8a5300;
+  --warn-dot: #e3a008;
+  --warn-soft: #fff5df;
+  --risk: #a8241b;
+  --risk-dot: #d03b3b;
+  --risk-soft: #fdecea;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --lv1: #9ec5f4;
+  --lv2: #3987e5;
+  --lv3: #184f95;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-read: "Merriweather", Georgia, "Times New Roman", serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: var(--bg);
+}
+[hidden] { display: none !important; }
+button, input, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid rgba(28, 92, 171, 0.4); outline-offset: 2px; border-radius: 4px; }
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Type */
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; color: var(--ink); }
+h1:focus { outline: none; }
+.display {
+  font-size: clamp(34px, 6vw, 56px);
+  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.title {
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.1;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+h2 { font-size: 22px; line-height: 1.25; font-weight: 720; letter-spacing: -0.01em; }
+h3 { font-size: 16px; line-height: 1.35; font-weight: 680; }
+p { margin: 0; }
+.lead {
+  font-family: var(--font-read);
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  max-width: 64ch;
+}
+.read {
+  font-family: var(--font-read);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink);
+  max-width: 66ch;
+}
+.muted { color: var(--ink-3); }
+.small { font-size: 13px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Top bar */
+.topbar { border-bottom: 1px solid var(--line); }
+.topbar-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 58px;
+  padding-block: 10px;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-name { font-weight: 800; letter-spacing: -0.01em; font-size: 16px; }
+.brand-sub { font-size: 13px; color: var(--ink-3); padding-left: 10px; border-left: 1px solid var(--line-2); }
+.facil { font-size: 13px; color: var(--ink-3); }
+
+/* Status bar */
+.status {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.status-in {
+  display: flex;
+  align-items: center;
+  gap: 14px 22px;
+  padding-block: 10px;
+  flex-wrap: wrap;
+}
+.stepper {
+  display: flex;
+  gap: 4px;
+  flex: 1 1 380px;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.stepper li {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  padding: 4px 0 6px;
+  border-bottom: 3px solid var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stepper li.done { color: var(--ink-2); border-color: var(--lv1); }
+.stepper li.current { color: var(--ink); border-color: var(--accent); }
+.credits { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.credits-num { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.credits-num.over { color: var(--risk); }
+.credits-lab { font-size: 12px; color: var(--ink-3); line-height: 1.25; }
+.credits-lab b { color: var(--ink-2); font-weight: 650; }
+.gauge { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+.gauge-top { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ink-3); }
+.gauge-top b { color: var(--ink); font-weight: 650; }
+.gauge-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+.gauge-bar span { height: 7px; background: var(--accent-soft); }
+.gauge-bar span:first-child { border-radius: 4px 0 0 4px; }
+.gauge-bar span:last-child { border-radius: 0 4px 4px 0; }
+.gauge.g-light .gauge-bar span:nth-child(-n+1),
+.gauge.g-manageable .gauge-bar span:nth-child(-n+2) { background: var(--accent); }
+.gauge.g-heavy .gauge-bar span { background: var(--warn-soft); }
+.gauge.g-heavy .gauge-bar span:nth-child(-n+3) { background: var(--warn-dot); }
+.gauge.g-over .gauge-bar span { background: var(--risk-dot); }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-2);
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 650;
+  font-size: 15px;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover { background: var(--wash); border-color: var(--ink-3); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-quiet { border-color: transparent; color: var(--accent); padding-inline: 10px; }
+.btn-quiet:hover { background: var(--accent-soft); border-color: transparent; }
+.btn-sm { padding: 8px 12px; font-size: 14px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.err { color: var(--risk); font-size: 14px; font-weight: 600; min-height: 1px; }
+
+/* Screens */
+.screen { padding-block: 40px 96px; display: flex; flex-direction: column; gap: 48px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.stack-lg { display: flex; flex-direction: column; gap: 22px; }
+.section-head { display: flex; flex-direction: column; gap: 6px; }
+.section-head p { color: var(--ink-2); max-width: 68ch; }
+.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+/* Welcome */
+.hero { display: flex; flex-direction: column; gap: 22px; padding-top: 24px; }
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.fact { padding: 16px 16px 16px 0; display: flex; flex-direction: column; gap: 2px; }
+.fact b { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.fact span { font-size: 13px; color: var(--ink-3); }
+.conds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+.cond-item { display: grid; grid-template-columns: 34px 1fr; gap: 4px 10px; padding: 18px 16px 18px 0; border-bottom: 1px solid var(--line); }
+.cond-n { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); padding-top: 3px; }
+.cond-item h3 { font-size: 17px; }
+.cond-item p { grid-column: 2; color: var(--ink-2); font-size: 15px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.steps li { border-top: 3px solid var(--ink); padding-top: 12px; display: flex; flex-direction: column; gap: 4px; counter-increment: step; }
+.steps li::before { content: "Step " counter(step); font-size: 12px; font-weight: 650; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.steps li p { color: var(--ink-2); font-size: 15px; }
+.callout {
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.callout.accent { border-color: var(--accent-line); background: var(--accent-soft); }
+.callout.warn { border-color: #f0d49a; background: var(--warn-soft); }
+.callout h3 { font-size: 16px; }
+.callout p { color: var(--ink-2); }
+
+/* Case */
+.case-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.case-side { display: flex; flex-direction: column; gap: 24px; }
+.case-block { display: flex; flex-direction: column; gap: 8px; }
+.case-block h2 { font-size: 18px; }
+.hard { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.hard li { font-family: var(--font-read); font-size: 15.5px; line-height: 1.7; }
+.hard b { font-family: var(--font-ui); font-weight: 700; font-size: 15px; }
+.gap-line { font-weight: 700; color: var(--ink); }
+.people { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.person { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.person-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.person h3 { font-size: 15px; }
+.person .who { font-size: 12px; color: var(--ink-3); }
+.person p { font-size: 14px; color: var(--ink-2); }
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.timeline li { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.timeline li span:first-child { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* Chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  background: var(--wash);
+  color: var(--ink-2);
+}
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+.h-strong { background: var(--good-soft); color: var(--good); }
+.h-strong .dot { background: var(--good-dot); }
+.h-steady { background: var(--steady-soft); color: var(--steady); }
+.h-steady .dot { background: var(--steady-dot); }
+.h-fragile { background: var(--warn-soft); color: var(--warn); }
+.h-fragile .dot { background: var(--warn-dot); }
+.h-risk { background: var(--risk-soft); color: var(--risk); }
+.h-risk .dot { background: var(--risk-dot); }
+.st-resisting { background: var(--risk-soft); color: var(--risk); }
+.st-resisting .dot { background: var(--risk-dot); }
+.st-skeptical { background: #fcf1ef; color: #9a3b30; }
+.st-skeptical .dot { background: #ea9a8f; }
+.st-neutral { background: var(--wash); color: var(--ink-2); }
+.st-neutral .dot { background: #a3abb6; }
+.st-supportive { background: var(--accent-soft); color: var(--accent); }
+.st-supportive .dot { background: var(--lv1); }
+.st-championing { background: var(--accent-soft); color: var(--accent-hover); }
+.st-championing .dot { background: var(--accent); }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--wash); color: var(--ink-2); white-space: nowrap; }
+
+/* Condition health rows */
+.health-list { display: flex; flex-direction: column; }
+.health-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 170px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.health-row .hn { font-weight: 650; font-size: 15px; }
+.health-row .hq { font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
+.health-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+.track { position: relative; height: 12px; background: var(--wash); border-radius: 0 4px 4px 0; }
+.track .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s1); border-radius: 0 4px 4px 0; }
+.track .ghost { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); opacity: 0.55; }
+.track .riskline { position: absolute; top: -5px; bottom: -5px; width: 1px; background: var(--risk-dot); opacity: 0.55; }
+.delta { font-size: 12px; font-weight: 650; white-space: nowrap; min-width: 52px; text-align: right; }
+.delta.up { color: var(--good); }
+.delta.down { color: var(--risk); }
+.delta.flat { color: var(--ink-3); }
+.mini-conds { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.mini-cond { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.mini-cond b { font-size: 13px; }
+
+/* Plan */
+.phase-head { display: flex; flex-direction: column; gap: 12px; }
+.live { font-size: 14px; color: var(--ink-2); }
+.standing { display: flex; flex-direction: column; gap: 12px; }
+.standing-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.standing-top p { font-size: 14px; color: var(--ink-2); }
+.move { display: flex; flex-direction: column; gap: 14px; }
+.move-head { display: flex; align-items: baseline; gap: 6px 14px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+.move-head p { color: var(--ink-2); font-size: 14px; }
+.lever-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 12px; }
+.lever {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lever.on { border-color: var(--accent-line); box-shadow: 0 0 0 1px var(--accent-line); }
+.lever-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.lever-cost { text-align: right; white-space: nowrap; line-height: 1.2; }
+.lever-cost .cn { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink-3); }
+.lever.on .lever-cost .cn { color: var(--accent); }
+.lever-cost .cu { display: block; font-size: 11.5px; color: var(--ink-3); }
+.lever-short { font-size: 14px; color: var(--ink-2); }
+.lever-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-3); }
+.lever-meta .sep { width: 1px; height: 14px; background: var(--line-2); margin: 0 4px; }
+.lever-level { font-size: 14px; color: var(--ink); min-height: 2.9em; }
+.lever-level b { font-weight: 700; }
+.lever.off-now .lever-level { color: var(--ink-3); }
+.lever-note { font-size: 12px; color: var(--warn); font-weight: 600; }
+.slider { display: flex; flex-direction: column; gap: 2px; }
+.ticks { display: flex; justify-content: space-between; }
+.ticks button {
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  font-size: 12px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.ticks button.sel { color: var(--ink); font-weight: 700; }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 30px;
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+  --fill: 0%;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--accent) 0 var(--fill), var(--line) var(--fill) 100%);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 2px rgba(20, 26, 34, 0.18);
+}
+input[type="range"].zero::-webkit-slider-thumb { border-color: var(--ink-3); }
+input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--accent); }
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+}
+input[type="range"].zero::-moz-range-thumb { border-color: var(--ink-3); }
+input[type="range"]:focus-visible { outline: none; }
+input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(28, 92, 171, 0.3); }
+input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px rgba(28, 92, 171, 0.3); }
+.closed { font-size: 13px; color: var(--ink-3); }
+.closed em { font-style: normal; color: var(--ink-3); }
+.commit {
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.commit-sum { font-size: 15px; color: var(--ink-2); }
+.commit-sum b { color: var(--ink); }
+
+/* Notice */
+.notice { border: 1px solid #f0d49a; background: var(--warn-soft); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.notice h2 { font-size: 17px; }
+.notice p { color: var(--ink-2); font-size: 15px; }
+
+/* Roadmap and heatmap */
+details.roadmap { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
+details.roadmap summary { cursor: pointer; font-weight: 680; }
+details.roadmap[open] summary { margin-bottom: 12px; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.heat { border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 560px; font-size: 13.5px; table-layout: fixed; }
+table.heat col.c-lever { width: 34%; }
+table.heat col.c-tot { width: 9%; }
+table.heat th { text-align: left; font-weight: 650; color: var(--ink-3); font-size: 12px; padding: 4px 8px; white-space: nowrap; }
+table.heat td { padding: 0; }
+table.heat td.lname { padding: 6px 8px 6px 0; color: var(--ink); line-height: 1.3; }
+table.heat td.tot, table.heat tfoot td { text-align: right; padding: 6px 8px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+table.heat tfoot th, table.heat tfoot td { border-top: 1px solid var(--line); font-weight: 700; color: var(--ink); }
+.lvl { display: flex; align-items: center; justify-content: center; height: 30px; border-radius: 4px; font-size: 12px; font-weight: 700; background: var(--wash); color: transparent; }
+.lvl-1 { background: var(--lv1); color: #0d2f57; }
+.lvl-2 { background: var(--lv2); color: #ffffff; }
+.lvl-3 { background: var(--lv3); color: #ffffff; }
+.heat-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); align-items: center; }
+.heat-legend i { display: inline-block; width: 18px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+
+/* Pulse */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.tile .tl { font-size: 13px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
+.tile .tv { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+.tile .ts { font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
+.tile.fogged .tv { font-size: 16px; font-weight: 650; color: var(--ink-3); padding-block: 7px; }
+.tile.watch { background: var(--wash); border-color: transparent; }
+.tile.watch .tv { color: var(--ink-2); }
+.watch-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.persona-list { display: flex; flex-direction: column; }
+.persona-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.persona-row .pn { font-weight: 650; font-size: 15px; }
+.persona-row .pq { font-size: 12px; color: var(--ink-3); }
+.persona-right { display: flex; align-items: center; gap: 8px; }
+.voices { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.voice { margin: 0; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.voice p { font-family: var(--font-read); font-style: italic; font-size: 16px; line-height: 1.65; }
+.voice cite { font-style: normal; font-size: 13px; color: var(--ink-3); }
+.voice.pos { border-color: #cfe7d6; }
+.signals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.signals li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 15px; color: var(--ink); align-items: start; }
+.signals svg { margin-top: 3px; }
+.event {
+  border: 1px solid var(--ink);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.event.done { border-color: var(--line-2); }
+.event-text { font-family: var(--font-read); font-size: 16px; line-height: 1.7; max-width: 70ch; }
+.options { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.option:hover { border-color: var(--ink-3); }
+.option input { position: absolute; opacity: 0; pointer-events: none; }
+.option.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.option:has(input:focus-visible) { outline: 3px solid rgba(28, 92, 171, 0.4); outline-offset: 2px; }
+.option.disabled { opacity: 0.55; cursor: not-allowed; }
+.option .ol { font-weight: 680; font-size: 15px; }
+.option .od { font-size: 13.5px; color: var(--ink-2); }
+.option .oc { font-size: 12.5px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.option.sel .oc { color: var(--accent); }
+
+/* Debrief */
+.outcome { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; align-items: end; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+.outcome-main { display: flex; flex-direction: column; gap: 14px; }
+.hero-num { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hero-num b { font-size: clamp(56px, 9vw, 88px); font-weight: 800; letter-spacing: -0.04em; line-height: 0.95; }
+.hero-num span { font-size: 15px; color: var(--ink-2); max-width: 22ch; }
+.tier { display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; }
+.tier-stuck { background: var(--good-soft); color: var(--good); }
+.tier-fragile, .tier-close { background: var(--warn-soft); color: var(--warn); }
+.tier-slipped, .tier-stalled { background: var(--risk-soft); color: var(--risk); }
+.next-move { border: 1px solid var(--ink); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.next-move .nm { font-family: var(--font-read); font-size: 16px; line-height: 1.65; }
+.chart-box { position: relative; }
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.chart-legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+.chart svg { display: block; overflow: visible; }
+.chart text { font-family: var(--font-ui); }
+.tip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 18px rgba(20, 26, 34, 0.12);
+  padding: 10px 12px;
+  font-size: 13px;
+  min-width: 170px;
+  z-index: 5;
+}
+.tip b { display: block; margin-bottom: 4px; }
+.tip div { display: flex; justify-content: space-between; gap: 12px; }
+.tip i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
+table.data { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.data th, table.data td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+table.data th:first-child, table.data td:first-child, table.data .l { text-align: left; }
+table.data th { font-size: 12px; color: var(--ink-3); font-weight: 650; }
+.barlist { display: flex; flex-direction: column; gap: 10px; }
+.barrow { display: grid; grid-template-columns: minmax(110px, 150px) minmax(0, 1fr) 76px; gap: 12px; align-items: center; font-size: 14px; }
+.barrow .bv { text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 13px; }
+.barrow .track { height: 14px; }
+.cols-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.patterns { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.patterns li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.patterns .pt { font-weight: 680; }
+.patterns .pd { font-size: 14px; color: var(--ink-2); }
+.patterns .pw { font-size: 13px; font-weight: 650; color: var(--risk); }
+.patterns li.ok .pt { color: var(--ink-2); }
+.patterns li.ok .pw { color: var(--good); }
+.list-plain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.list-plain li { font-size: 15px; display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.list-plain li span { font-size: 13px; color: var(--ink-3); }
+.learn { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.learn-card { border: 1px solid var(--line-2); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.learn-card .why { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.learn-card h3 { font-size: 17px; }
+.learn-card p { font-size: 14.5px; color: var(--ink-2); }
+.learn-card .tool { font-size: 13px; color: var(--ink-2); }
+.learn-card .tool b { color: var(--ink); }
+.learn-card .monday { border-top: 1px solid var(--line); padding-top: 10px; font-size: 14px; }
+.brief { display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-weight: 650; font-size: 15px; }
+.field .hint { font-size: 13px; color: var(--ink-3); }
+textarea {
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  min-height: 74px;
+  resize: vertical;
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--bg);
+}
+textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(28, 92, 171, 0.2); }
+.copy-fallback { width: 100%; min-height: 220px; font-family: var(--font-mono); font-size: 12.5px; }
+details.about { border-top: 1px solid var(--line); padding-top: 16px; }
+details.about summary { cursor: pointer; font-weight: 680; }
+details.about .read { margin-top: 12px; }
+details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 15px; display: flex; flex-direction: column; gap: 6px; max-width: 72ch; }
+.m18-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.m18-tile { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.m18-tile .from { font-size: 13px; color: var(--ink-3); }
+.m18-tile .to { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.m18-tile .chg { font-size: 13px; font-weight: 650; }
+.foot { border-top: 1px solid var(--line); padding-block: 22px 40px; font-size: 13px; color: var(--ink-3); }
+
+@media (max-width: 960px) {
+  .mini-conds { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .case-grid, .two-col, .cols-2, .outcome { grid-template-columns: minmax(0, 1fr); }
+  .screen { padding-block: 28px 80px; gap: 40px; }
+}
+@media (max-width: 560px) {
+  .mini-conds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .status .btn { display: none; }
+  .status-in { gap: 8px 18px; padding-block: 8px; }
+  .lead { font-size: 17px; }
+  .health-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .health-row .track { grid-column: 1 / -1; grid-row: 2; }
+  .stepper li { font-size: 11px; }
+  .credits-num { font-size: 22px; }
+  .gauge { min-width: 130px; }
+  .barrow { grid-template-columns: minmax(0, 1fr) 70px; }
+  .barrow .track { grid-column: 1 / -1; grid-row: 2; }
+  .brand-sub { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  .topbar .facil, .status, .no-print, .actions, details.about summary { display: none !important; }
+  .screen { padding-block: 0; gap: 28px; }
+  .event, .lever, .callout, .next-move { break-inside: avoid; }
+  textarea { border: 0; padding: 0; min-height: 0; }
+}
+
+</style>
+</head>
+<body>
+<script>window.SIM_BUILD = { standalone: true };</script>
+<header class="topbar" id="topbar"></header>
+<div id="app"></div>
+<noscript><p style="padding:24px;font-family:system-ui,sans-serif">This simulation needs JavaScript turned on.</p></noscript>
+<script>
+/* Making AI Stick Simulation: case content, levers, events, and debrief text.
+   Edit wording here. Numbers that shape scoring live in `model` and in each lever. */
+(function (root) {
+  'use strict';
+
+  var STD = [0, 1, 1.7, 2.2];
+
+  root.SIM_DATA = {
+    meta: {
+      title: `Making AI Stick Simulation`,
+      course: `Making AI Stick`,
+      facilitator: `Dr. Rocco Loverro`,
+      version: `1.0`
+    },
+
+    budget: 100,
+    successRate: 80,
+    riskLine: 35,
+
+    model: {
+      gain: 3.2,
+      phaseGain: [0.55, 0.9, 1.1, 1.0],
+      personaStep: 0.6,
+      headroom: 125,
+      decayScale: 0.9,
+      loadScale: 2,
+      focusLimit: 8,
+      noiseLoad: 0.4,
+      usedSpeed: 0.32,
+      valSpeed: 0.25,
+      newCenterStart: 0.6
+    },
+
+    conditions: [
+      { id: 'conv', name: `Conviction`, question: `Do people genuinely believe this matters?`, start: 30, floor: 18, decay: 0.045 },
+      { id: 'cap', name: `Capability`, question: `Do they have the skill and time to do it?`, start: 22, floor: 14, decay: 0.035 },
+      { id: 'endo', name: `Endorsement`, question: `Do they see leaders visibly backing it?`, start: 42, floor: 20, decay: 0.055 },
+      { id: 'coh', name: `Coherence`, question: `Does it fit with everything else going on?`, start: 30, floor: 20, decay: 0.025 },
+      { id: 'reinf', name: `Reinforcement`, question: `Is the new behavior rewarded over the old?`, start: 20, floor: 12, decay: 0.05 },
+      { id: 'adapt', name: `Adaptive Capacity`, question: `Is there bandwidth left to absorb it?`, start: 42, floor: 25, decay: 0 }
+    ],
+
+    health: [
+      { min: 70, key: 'strong', label: `Strong` },
+      { min: 55, key: 'steady', label: `Steady` },
+      { min: 35, key: 'fragile', label: `Fragile` },
+      { min: -1, key: 'risk', label: `At risk` }
+    ],
+
+    startNotes: {
+      conv: `No one has heard the why in their own terms, and job fears haven't been addressed.`,
+      cap: `No training yet, and no time in the day to learn.`,
+      endo: `Steady at the top, missing in the middle.`,
+      coh: `Quotas, the records question, and the union's concerns all pull against the change.`,
+      reinf: `The system rewards closing cases the old way.`,
+      adapt: `Teams are stretched thin after last year's staffing cuts.`
+    },
+
+    phases: [
+      {
+        n: 1, id: 'prepare', name: `Prepare`, short: `Prepare`, months: `Months 1–2`, start: 0, end: 2, len: 2, coverage: 0,
+        intro: `Nothing is live yet. The two pilot centers, Region 3 and Region 7, switch on in month 3. This is your window to set things up before anyone touches the tool.`,
+        live: `No one has access yet.`
+      },
+      {
+        n: 2, id: 'pilot', name: `Pilot and launch`, short: `Pilot`, months: `Months 3–5`, start: 2, end: 5, len: 3, coverage: 0.6,
+        intro: `The pilot centers go live in month 3 and four more centers follow in month 5. First impressions form now, and they travel fast between centers.`,
+        live: `Two pilot centers, then four more by month 5. About 60% of caseworkers.`
+      },
+      {
+        n: 3, id: 'scale', name: `Scale`, short: `Scale`, months: `Months 6–9`, start: 5, end: 9, len: 4, coverage: 1,
+        intro: `The last four centers go live in month 6, so every caseworker now has the tool. The question shifts from whether people will try it to whether it changes how the work gets done.`,
+        live: `All ten centers. Every caseworker.`
+      },
+      {
+        n: 4, id: 'sustain', name: `Sustain`, short: `Sustain`, months: `Months 10–12`, start: 9, end: 12, len: 3, coverage: 1,
+        intro: `The program office hands off to day-to-day operations at month 12. Whatever will keep this alive after you leave has to be in place now.`,
+        live: `All ten centers. The program office closes at month 12.`
+      }
+    ],
+
+    moves: [
+      { id: 'diagnose', name: `Diagnose`, purpose: `Find where the change is stuck before you spend.` },
+      { id: 'map', name: `Map`, purpose: `Sponsors, managers, champions, and the union: the people who carry it.` },
+      { id: 'communicate', name: `Communicate`, purpose: `Meaning, not announcements. What changes, what doesn't, and why.` },
+      { id: 'train', name: `Train`, purpose: `Behavior first. Practice on real work with a coach nearby.` },
+      { id: 'reinforce', name: `Reinforce`, purpose: `Make week 40 look like week 4.` }
+    ],
+
+    levelNames: [`Off`, `Light`, `Moderate`, `Intensive`],
+
+    adkar: {
+      A: `Awareness`, D: `Desire`, K: `Knowledge`, B: `Ability`, R: `Reinforcement`
+    },
+
+    levers: [
+      {
+        id: 'assess', move: 'diagnose', name: `Readiness and impact assessment`, cost: 2,
+        short: `Measure readiness and map who is affected, and how, before you spend.`,
+        extra: `Sharpens every lever you use in later phases.`,
+        fit: [1.2, 0.7, 0, 0], curve: STD, load: 0.3, adkar: null,
+        effects: { coh: 3, adapt: 1.5, conv: 0.5 },
+        levels: [
+          `No formal assessment.`,
+          `A quick pulse survey in the two pilot centers.`,
+          `A readiness assessment across all ten centers, plus an impact map by role.`,
+          `A full readiness and ADKAR diagnostic, an impact map by role, and a review of everything else landing on caseworkers this year.`
+        ]
+      },
+      {
+        id: 'listen', move: 'diagnose', name: `Listening sessions and pulse surveys`, cost: 2,
+        short: `Hear what people actually think. Resistance is information.`,
+        extra: `Adds voices and a sentiment read to your pulse checks, and softens the sting of missteps.`,
+        fit: [0.9, 1.1, 1.0, 0.9], curve: STD, load: 0.35, adkar: 'D',
+        effects: { conv: 3, coh: 1, endo: 0.5 },
+        levels: [
+          `No structured listening.`,
+          `A three-question pulse survey each month.`,
+          `Pulse surveys plus listening sessions in each region.`,
+          `Pulse surveys, regional listening sessions, and small-group sessions with skeptics.`
+        ]
+      },
+      {
+        id: 'sponsor', move: 'map', name: `Visible sponsorship and a sponsor group`, cost: 2,
+        short: `Leaders who visibly back it, and use it, where people can see.`,
+        fit: [1.2, 1.1, 1.0, 0.9], curve: STD, load: 0.1, adkar: 'D',
+        effects: { endo: 6, conv: 2 },
+        levels: [
+          `The sponsor stays in the background.`,
+          `The sponsor sends a kickoff memo and mentions it in staff meetings.`,
+          `The sponsor uses the tool where people can see it, and a sponsor group of three senior leaders meets monthly.`,
+          `The sponsor and the regional directors use it visibly, share their own examples, and clear blockers every two weeks.`
+        ]
+      },
+      {
+        id: 'mgrPreview', move: 'map', name: `Manager previews, two weeks before launch`, cost: 3,
+        short: `Section chiefs hear it first so they can translate it for their teams. Before launch, not at it.`,
+        fit: [1.3, 0.75, 0, 0], curve: STD, load: 0.3, adkar: 'A',
+        effects: { endo: 5, conv: 3, cap: 1 },
+        levels: [
+          `Supervisors find out with everyone else.`,
+          `A briefing email to section chiefs with talking points.`,
+          `Preview sessions for the 20 section chiefs two weeks before launch, with talking points and an FAQ.`,
+          `Hands-on previews for all 350 supervisors, a section-chief Q&A with the sponsor, and a manager toolkit.`
+        ]
+      },
+      {
+        id: 'mgrCoach', move: 'map', name: `Manager coaching and routines`, cost: 3,
+        short: `Supervisors coach to the new workflow in huddles and one-on-ones.`,
+        fit: [0, 1.0, 1.15, 1.1], curve: [0, 0.8, 1.7, 2.3], load: 0.4, adkar: 'B',
+        effects: { endo: 4, reinf: 4, cap: 2 },
+        levels: [
+          `Supervisors aren't asked to coach it.`,
+          `Supervisors get a monthly tip sheet on coaching to the new workflow.`,
+          `Section chiefs coach in weekly huddles and one-on-ones, with a supervisor community of practice.`,
+          `Every supervisor is trained to coach it, adoption is a standing item in one-on-ones, and managers meet in peer coaching circles.`
+        ]
+      },
+      {
+        id: 'champions', move: 'map', name: `Change champion network`, cost: 3,
+        short: `Peers who show people like them how it works.`,
+        fit: [0.8, 1.15, 1.1, 1.0], curve: [0, 0.7, 1.65, 2.25], load: 0.6, adkar: 'D',
+        effects: { cap: 4.5, conv: 3.5, reinf: 1 },
+        levels: [
+          `No champion network.`,
+          `Volunteer champions and a shared Teams channel.`,
+          `One trained champion per unit, with a playbook and monthly huddles.`,
+          `Champions with 10% protected time, peer coaching on the floor, and a community of practice.`
+        ]
+      },
+      {
+        id: 'union', move: 'map', name: `Union and labor-relations engagement`, cost: 2,
+        short: `Bring the union local in before decisions are made, not after.`,
+        fit: [1.3, 1.0, 0.8, 0.6], curve: STD, load: 0.1, adkar: 'D',
+        effects: { coh: 5, conv: 2 },
+        levels: [
+          `Labor relations handles it if it comes up.`,
+          `Labor relations sends the union a formal notice of the change.`,
+          `Pre-decisional briefings with the union local before the pilot.`,
+          `A joint labor-management working group that shapes the pilot, the training, and the performance approach.`
+        ]
+      },
+      {
+        id: 'clearPlate', move: 'map', name: `Clear the plate`, cost: 3,
+        short: `Take work off people's plates so they have time to learn. Change stacked on a full plate doesn't stick.`,
+        fit: [1.0, 1.2, 1.0, 0.8], curve: [0, 1, 1.8, 2.4], load: -1.2, adkar: 'B',
+        effects: { adapt: 6, cap: 2, conv: 1 },
+        levels: [
+          `Everything else stays on the plate.`,
+          `Pause one recurring data call for teams that are learning the tool.`,
+          `Lower production targets by 10% for six weeks while people learn.`,
+          `Defer two competing initiatives and protect two hours a week of practice time for every caseworker.`
+        ]
+      },
+      {
+        id: 'email', move: 'communicate', name: `Email and intranet updates`, cost: 1,
+        short: `Broad, cheap, and easy to ignore.`,
+        fit: [1.1, 1.0, 0.9, 0.8], curve: [0, 1, 1.45, 1.7], load: 0.2, adkar: 'A',
+        effects: { conv: 2.5, coh: 1 },
+        levels: [
+          `No routine updates.`,
+          `A monthly update in the agency newsletter.`,
+          `Biweekly updates and an intranet page with FAQs.`,
+          `Weekly emails to everyone, banners, and reminders inside the case system.`
+        ]
+      },
+      {
+        id: 'townhall', move: 'communicate', name: `Leader town halls`, cost: 4,
+        short: `Leaders tell the why in caseworkers' terms and take questions.`,
+        fit: [1.1, 1.2, 0.9, 0.8], curve: [0, 0.9, 1.6, 2.0], load: 0.6, adkar: 'A',
+        effects: { conv: 6, endo: 4 },
+        levels: [
+          `No leader-led sessions.`,
+          `A recorded video message from the Administrator.`,
+          `A live all-hands with open Q&A, telling the why in caseworkers' terms.`,
+          `Live town halls in every region with the sponsor, plus follow-up Q&As.`
+        ]
+      },
+      {
+        id: 'impact', move: 'communicate', name: `Workforce-impact conversations`, cost: 2,
+        short: `Say plainly what changes for people's jobs, what doesn't, and what's still open.`,
+        fit: [1.2, 1.1, 0.8, 0.5], curve: STD, load: 0.3, adkar: 'D',
+        effects: { conv: 6, coh: 1 },
+        levels: [
+          `The job question is left unanswered.`,
+          `An FAQ that says what changes for caseworkers and what doesn't.`,
+          `Leaders and supervisors explain what changes, what doesn't, and what's still open.`,
+          `Written commitments on job scope and performance, a monthly open forum, and answers reviewed with labor relations.`
+        ]
+      },
+      {
+        id: 'guardrails', move: 'communicate', name: `Rules for responsible use`, cost: 2,
+        short: `Clear rules on human review, privacy, and records, built with the people who own them.`,
+        fit: [1.1, 1.1, 0.8, 0.5], curve: STD, load: 0.15, adkar: 'K',
+        effects: { coh: 5, conv: 2 },
+        levels: [
+          `No published rules beyond the security approval.`,
+          `A one-page list of do's and don'ts for case data.`,
+          `Clear rules on human review, privacy, and records, built with the privacy and records offices.`,
+          `Rules built into the tool's screens, a published records decision, and a way to report bad drafts.`
+        ]
+      },
+      {
+        id: 'elearning', move: 'train', name: `Self-paced e-learning`, cost: 1,
+        short: `Courses on the tool that people take on their own.`,
+        fit: [0, 1.0, 0.9, 0.6], curve: [0, 1, 1.5, 1.8], load: 0.6, adkar: 'K',
+        effects: { cap: 3 },
+        levels: [
+          `No course.`,
+          `A 20-minute course on the tool's features.`,
+          `Role-based modules with case examples.`,
+          `A required learning path with a knowledge check.`
+        ]
+      },
+      {
+        id: 'jobaids', move: 'train', name: `Job aids and prompt libraries`, cost: 1,
+        short: `Prompts and quick references right where the work happens.`,
+        fit: [0, 1.1, 1.0, 0.8], curve: [0, 1, 1.6, 2.0], load: 0, adkar: 'K',
+        effects: { cap: 2.5, coh: 1.5, adapt: 0.5 },
+        levels: [
+          `No job aids.`,
+          `A quick-reference card.`,
+          `A prompt library for the ten most common case types.`,
+          `Prompts and worked examples built into the case system, kept current by champions.`
+        ]
+      },
+      {
+        id: 'officehours', move: 'train', name: `Office hours and floor support`, cost: 2,
+        short: `Help at the moment of use, while people practice on real cases.`,
+        fit: [0, 1.2, 1.1, 0.9], curve: STD, load: 0.2, adkar: 'B',
+        effects: { cap: 5, conv: 2, adapt: 1 },
+        levels: [
+          `People are on their own after training.`,
+          `Weekly virtual office hours.`,
+          `Floor support in each center for the first month after go-live.`,
+          `Floor support and a same-day help line for the first 90 days, plus a fix-it loop for bad drafts.`
+        ]
+      },
+      {
+        id: 'labs', move: 'train', name: `Hands-on labs on real cases`, cost: 4,
+        short: `Practice on real, masked cases with a coach. Training that teaches the workflow, not just the buttons.`,
+        fit: [0, 1.2, 1.0, 0.7], curve: [0, 0.55, 1.7, 2.4], load: 1.4, adkar: 'K',
+        effects: { cap: 8, conv: 3 },
+        levels: [
+          `No hands-on training.`,
+          `Optional demo sessions.`,
+          `Role-based 90-minute labs using real, masked cases.`,
+          `A two-week practice cohort on live cases with a coach.`
+        ]
+      },
+      {
+        id: 'recognition', move: 'reinforce', name: `Recognition and success stories`, cost: 2,
+        short: `Celebrate the behavior you want, told by peers.`,
+        fit: [0, 1.0, 1.15, 1.1], curve: STD, load: 0.1, adkar: 'R',
+        effects: { reinf: 4.5, conv: 3 },
+        levels: [
+          `No recognition.`,
+          `Shout-outs in the newsletter.`,
+          `Monthly stories of teams using it well, told by their peers.`,
+          `Recognition from the Administrator for quality gains, tied to specific behavior.`
+        ]
+      },
+      {
+        id: 'dashboard', move: 'reinforce', name: `Early-warning adoption dashboard`, cost: 2,
+        short: `Measure meaningful use and early warnings, not logins.`,
+        extra: `Lets you see real use in your pulse checks. Without it, you only see logins.`,
+        fit: [0.6, 1.0, 1.1, 1.0], curve: STD, load: 0.05, adkar: 'R',
+        effects: { reinf: 3, coh: 1 },
+        levels: [
+          `You rely on the vendor's login report.`,
+          `Track active use by center, beyond logins.`,
+          `Leading indicators reviewed monthly: manager engagement, peer-led use, and a sentiment pulse.`,
+          `Leading and value measures, including meaningful use, cycle time, and quality, with named owners who act on thresholds.`
+        ]
+      },
+      {
+        id: 'perfStandards', move: 'reinforce', name: `Performance standards and incentives`, cost: 3,
+        short: `Change what gets rated and rewarded. Timing matters.`,
+        fit: [0, 0, 1.0, 1.1], curve: [0, 0.8, 1.7, 2.3], load: 0.5, adkar: 'R',
+        effects: { reinf: 7, coh: 3 },
+        levels: [
+          `Standards stay as they are.`,
+          `Supervisors may credit quality drafting in reviews.`,
+          `Production standards adjusted so time spent on AI-assisted quality counts.`,
+          `New performance standards and awards that reward quality and use, negotiated with the union.`
+        ]
+      },
+      {
+        id: 'workflow', move: 'reinforce', name: `Build it into the workflow`, cost: 4,
+        short: `Make AI drafting the default step and retire the old path.`,
+        fit: [0, 0.5, 1.1, 1.1], curve: [0, 0.6, 1.6, 2.3], load: 1.0, adkar: 'R',
+        effects: { coh: 7, reinf: 5, cap: 1 },
+        levels: [
+          `The tool sits beside the old workflow.`,
+          `Add the assistant as a step on the case checklist.`,
+          `Make AI drafting the default for three case types and archive the old templates.`,
+          `Redesign the workflow end to end: AI draft first, human review, and the old path retired.`
+        ]
+      }
+    ],
+
+    case: {
+      agency: `Federal Benefits Delivery Agency`,
+      tool: `Case Drafting Assistant`,
+      role: `You're the change lead in the agency's AI Program Office. You report to the Chief AI Officer and have no authority over the regional offices, so everything you get done goes through sponsors, managers, and peers.`,
+      agencyText: `About 6,800 people process benefits claims for the public. That includes 4,200 caseworkers across ten regional processing centers and about 350 supervisors. Headquarters has policy, IT, privacy, and labor relations staff.`,
+      change: `The Case Drafting Assistant is built into the case management system. It drafts case summaries, letters requesting evidence, and initial decisions, and the caseworker reviews and approves each one. It's built, cleared by security and privacy, and licensed for three years.`,
+      gap: `Built and Deployed are done. Your job is Used and Valuable.`,
+      whyNow: `The backlog is at a five-year high, and claims take 187 days on average. The Administrator has publicly promised to cut that by 30% within 18 months. Leadership expects the assistant to give each caseworker back about five hours a week.`,
+      hard: [
+        { label: `Skepticism people earned`, text: `The case system upgrade three years ago launched with outages and lost work. Staff still call it "the Big Freeze."` },
+        { label: `Stretched teams`, text: `Last year's staff cuts left production targets unchanged. Overtime is routine.` },
+        { label: `Quotas reward the old way`, text: `Caseworkers are rated on cases closed per week, and learning the assistant slows them down at first.` },
+        { label: `The union`, text: `The local wants a voice before the pilot and is watching performance standards and job security.` },
+        { label: `Privacy and records`, text: `Privacy approved the tool but wants clear rules for using it. Records management hasn't decided whether AI drafts count as federal records.` },
+        { label: `Unapproved AI tools`, text: `Some staff already paste case notes into public chatbots.` },
+        { label: `Identity`, text: `Senior caseworkers have written decisions for 20 years. That expertise is who they are.` }
+      ],
+      leaders: [
+        { name: `The Administrator`, stance: `Advocate`, note: `Announced the goal. Enthusiastic, with little time.` },
+        { name: `Deputy Administrator for Operations`, stance: `Advocate`, note: `Your executive sponsor. A respected career executive who came up through the field.` },
+        { name: `Chief AI Officer`, stance: `Advocate`, note: `Owns the AI mandate. Thinks in deployments, not adoption.` }
+      ],
+      success: `At month 18, at least 80% of caseworkers are using the assistant meaningfully: drafting real cases that get reviewed and approved, with no condition at risk. Logins don't count.`,
+      privateNote: `Playing from the private sector? Read "union" as employee or labor relations, and "continuing resolution" as a budget freeze.`
+    },
+
+    personas: [
+      { id: 'directors', name: `Regional directors`, who: `10 directors`, quadrant: `Pivot points`, start: -0.8, note: `Measured on the backlog. They see training time as lost production.` },
+      { id: 'chiefs', name: `Section chiefs`, who: `The 20 who matter most`, quadrant: `Manager layer`, start: 0, note: `Learned about the tool from the press release.` },
+      { id: 'union', name: `Union local`, who: `President and stewards`, quadrant: `Pivot point`, start: -1, note: `Wants a seat at the table before the pilot.` },
+      { id: 'newer', name: `Newer caseworkers`, who: `Under 3 years`, quadrant: `Early users`, start: 0.5, note: `Some already paste case notes into public chatbots.` },
+      { id: 'veterans', name: `Veteran caseworkers`, who: `15+ years`, quadrant: `Persistent skeptics`, start: -1.4, note: `They remember the Big Freeze. Their expertise is their identity.` },
+      { id: 'privacy', name: `Privacy and records officers`, who: `Headquarters`, quadrant: `Gatekeepers`, start: -0.2, note: `They can pause the rollout.` }
+    ],
+
+    stances: [
+      { max: -1.25, key: 'resisting', label: `Resisting` },
+      { max: -0.4, key: 'skeptical', label: `Skeptical` },
+      { max: 0.4, key: 'neutral', label: `Neutral` },
+      { max: 1.4, key: 'supportive', label: `Supportive` },
+      { max: 99, key: 'championing', label: `Championing` }
+    ],
+
+    events: {
+      union: {
+        after: 1,
+        title: `The union asks to bargain`,
+        text: `The union local has sent a demand to bargain over the impact and implementation of the pilot. Labor relations says the pilot can't start on schedule until it's addressed.`,
+        resolvedTitle: `The union signs off`,
+        resolvedText: `The union local raised its concerns at the table you set up in month one. An agreement on the pilot was signed in two weeks, and the pilot starts on time.`,
+        options: [
+          { id: 'negotiate', label: `Negotiate now`, cost: 3, detail: `Bring labor relations and the sponsor to the table this week. The pilot starts on time.` },
+          { id: 'proceed', label: `Start the pilot as planned`, cost: 0, detail: `Go ahead and deal with it later.` },
+          { id: 'delay', label: `Delay the pilot six weeks`, cost: 0, detail: `Bargain properly, but lose time. Fewer centers go live by month 5.` }
+        ]
+      },
+      headline: {
+        after: 2,
+        title: `A bad headline`,
+        text: `A national news story reports that another agency's AI tool drafted a wrongful benefits denial. A member of Congress asks every agency using AI drafting how it reviews the output. Your caseworkers have seen the story.`,
+        options: [
+          { id: 'qa', label: `The Administrator holds a candid Q&A on human review`, cost: 4, detail: `Live and unscripted, with your review rules on screen.` },
+          { id: 'faq', label: `Publish an FAQ on how review works`, cost: 1, detail: `Fast and clear, but nobody sees a leader stand behind it.` },
+          { id: 'silent', label: `Say nothing`, cost: 0, detail: `It's another agency's problem.` }
+        ]
+      },
+      win: {
+        after: 2,
+        title: `An early win`,
+        text: `Region 3 reports that caseworkers using the assistant cut drafting time on evidence letters by 31%, with no rise in errors.`,
+        options: [
+          { id: 'amplify', label: `Spread the story through peers and leaders`, cost: 2, detail: `Caseworkers from Region 3 tell it in their own words.` },
+          { id: 'skip', label: `Keep the focus on scaling`, cost: 0, detail: `Celebrate later.` }
+        ]
+      },
+      sponsor: {
+        after: 3,
+        title: `Your sponsor is reassigned`,
+        text: `The Deputy Administrator for Operations, your executive sponsor, has been reassigned to lead the agency's new modernization program. A new deputy starts in two weeks and has never used the tool.`,
+        options: [
+          { id: 'brief', label: `Brief the new deputy and hand over the sponsor role`, cost: 2, detail: `A real handover: the plan, the numbers, and the people.` },
+          { id: 'admin', label: `Ask the Administrator to step in visibly`, cost: 3, detail: `The agency head uses the tool live at the next all-hands.` },
+          { id: 'carry', label: `Carry on`, cost: 0, detail: `The sponsor group and the managers will hold it.` }
+        ]
+      },
+      cr: {
+        title: `A continuing resolution and a system upgrade`,
+        text: `Congress passed a continuing resolution instead of a full-year budget, so 15% of your remaining credits are frozen. A required security upgrade to the case system also lands in month 10, and every caseworker has to recertify.`
+      }
+    },
+
+    voices: [
+      { id: 'job', kind: 'neg', text: `It'll take my job. Nobody will say what happens to examiners once this thing writes the decisions.`, who: `Caseworker, 12 years` },
+      { id: 'trust', kind: 'neg', text: `I don't trust the output. If it gets a date wrong in a denial, it's my name on the letter.`, who: `Senior caseworker, Region 4` },
+      { id: 'before', kind: 'neg', text: `We've seen this before. The Big Freeze was supposed to save us time too.`, who: `Caseworker, 19 years` },
+      { id: 'time', kind: 'neg', text: `I don't have time to learn it. I'm already working overtime to hit my numbers.`, who: `Caseworker, Region 7` },
+      { id: 'leaders', kind: 'neg', text: `Leadership doesn't use it. My director hasn't mentioned it since the kickoff email.`, who: `Caseworker, Region 9` },
+      { id: 'obligations', kind: 'neg', text: `This violates our obligations. Are AI drafts federal records or not? Nobody can tell me.`, who: `Records liaison, Region 2` },
+      { id: 'forced', kind: 'neg', text: `It's being forced on us. They changed the standards before most of us could even use it.`, who: `Union steward` },
+      { id: 'once', kind: 'neg', text: `I tried it once. It was bad. The draft missed half the evidence and I had to start over.`, who: `Caseworker, 2 years` },
+      { id: 'skip', kind: 'neg', text: `My team asked me about the pilot and I had nothing to tell them. I read about it in the press release too.`, who: `Section chief, Region 3` },
+      { id: 'fatigue', kind: 'neg', text: `That's the fourth AI email this week. I've started deleting them.`, who: `Caseworker, Region 1` },
+      { id: 'pConv', kind: 'pos', text: `I was skeptical. Then I watched it draft an evidence letter I'd have spent 40 minutes on.`, who: `Caseworker, 16 years` },
+      { id: 'pCap', kind: 'pos', text: `After an hour with the floor support person it clicked. I use it on every case now.`, who: `Caseworker, Region 7` },
+      { id: 'pEndo', kind: 'pos', text: `My section chief walks through a real case with it in our huddle every week. It's clearly not going away.`, who: `Caseworker, Region 3` },
+      { id: 'pCoh', kind: 'pos', text: `It's in the case system, the review rules are clear, and the union signed off. It just fits now.`, who: `Section chief, Region 5` },
+      { id: 'pReinf', kind: 'pos', text: `Our unit got recognized for quality, not just speed. People noticed what got rewarded.`, who: `Caseworker, Region 8` },
+      { id: 'pAdapt', kind: 'pos', text: `Taking the quarterly data call off our plate is the only reason we had time to learn this.`, who: `Section chief, Region 6` },
+      { id: 'pUnion', kind: 'pos', text: `We got to shape how the pilot worked. That's different from being told.`, who: `Union steward` }
+    ],
+
+    signals: {
+      managerSkip: `Section chiefs say they learned about the pilot from the press release, the same day their teams did.`,
+      townhallFirst: `The town hall landed before supervisors were briefed. Caseworkers brought questions to supervisors who couldn't answer them.`,
+      fatigue: `Open rates on AI emails dropped by half this phase. People are tuning the messages out.`,
+      overloaded: `Overtime is up and three regional directors asked to slow the rollout. The workload of the change was more than people could absorb.`,
+      noise: `Caseworkers can't tell which of this phase's many activities matter. Too much at once blurs the message.`,
+      vagueImpact: `A rumor is spreading that the assistant is the first step toward cutting caseworker positions.`,
+      toolOnly: `People finished the course but say they don't know what a good AI draft looks like on a real case.`,
+      mandateFirst: `New standards arrived before most caseworkers could use the tool well. It reads as a mandate.`,
+      grievance: `The union filed a grievance over changes made without bargaining.`,
+      sponsorDecay: `The sponsor hasn't mentioned the assistant in weeks. People are reading the silence.`,
+      wrongMetrics: `Your report shows logins and course completions. It can't tell you whether drafts are being used on real cases.`,
+      goodPilot: `Pilot centers report first drafts in minutes instead of hours.`,
+      goodCoaching: `Supervisors are coaching to the new workflow in their huddles.`,
+      goodUnion: `The union local co-presented at a regional session.`,
+      goodPlate: `Caseworkers say the paused data call gave them real time to practice.`,
+      decaying: `Use is slipping in centers where the launch energy has faded.`
+    },
+
+    patterns: [
+      { id: 'sponsorDecay', name: `Sponsor decay`, desc: `The sponsor announces, then disappears. The workforce reads it as deprioritization.` },
+      { id: 'managerSkip', name: `Manager skip`, desc: `Supervisors learn alongside their teams. The cascade fails before it starts.` },
+      { id: 'toolOnly', name: `Tool-only training`, desc: `Training taught the tool, not the workflow. No model of what good looks like.` },
+      { id: 'vagueImpact', name: `Vague impact story`, desc: `The workforce-impact story was deferred or vague, and vagueness reads as a threat.` },
+      { id: 'wrongMetrics', name: `Wrong metrics`, desc: `The dashboard leads with logins. It looks good and tells you nothing.` },
+      { id: 'noReinforcement', name: `No reinforcement`, desc: `Use spikes at launch and decays, and no one notices until it's too late.` },
+      { id: 'overloaded', name: `Change on a full plate`, desc: `Change stacked on a full plate doesn't stick. It just adds stress.` }
+    ],
+
+    learning: {
+      conv: {
+        session: `Session 4: Communication Strategy and Narrative Design`,
+        focus: `Move from announcement to meaning-making. Build the workforce-impact story and run the plain-language test.`,
+        tool: `Communication Campaign Planner`,
+        monday: `Write your launch message as a narrative: what changes, what doesn't, and how you'll know it's working. Then test it on one frontline employee.`
+      },
+      cap: {
+        session: `Session 5: Training Program Design and Human-Centered AI`,
+        focus: `Start from the behavioral outcome, then build the full training arc: awareness, knowledge, practice with a coach, and reinforcement.`,
+        tool: `Training Program Design Canvas`,
+        monday: `Write the one-sentence behavioral outcome for your initiative and name the signal a manager would see in the work.`
+      },
+      endo: {
+        session: `Workshop: Stakeholder Mapping and Resistance Architecture`,
+        focus: `Find your pivot points and your manager layer. Brief managers two weeks before launch, not at it.`,
+        tool: `Stakeholder Mapping Template`,
+        monday: `List the 10 to 25 managers whose behavior matters most, by name, and what each one needs from you before launch.`
+      },
+      coh: {
+        session: `Session 3: AI Readiness Assessment`,
+        focus: `Look for where process, policy, and performance measures pull against the change. The lowest dimension sets your ceiling.`,
+        tool: `AI Change Readiness Assessment`,
+        monday: `Find one place where a measure or policy punishes the new behavior, and take it to the person who owns it.`
+      },
+      reinf: {
+        session: `Session 6: Measuring Adoption and Sustaining Change`,
+        focus: `Build the reinforcement architecture: recognition, incentives, and cultural embedding, steered by leading indicators.`,
+        tool: `Adoption Metrics Dashboard`,
+        monday: `Pick three leading indicators to start tracking next week and one vanity metric to stop reporting.`
+      },
+      adapt: {
+        session: `Session 3: AI Readiness Assessment`,
+        focus: `Treat readiness as binding-constraint analysis. Capacity is a condition you protect, not a given.`,
+        tool: `AI Change Readiness Assessment`,
+        monday: `Before your next rollout step, decide what comes off your team's plate, and say it out loud.`
+      },
+      patterns: {
+        session: `Session 1: Why AI Adoption Fails`,
+        focus: `Revisit the pattern analysis. Predictable failure is preventable failure.`,
+        tool: `ADKAR Diagnostic for AI`,
+        monday: `Name the failure pattern you've seen in your own organization and the early signal that would have warned you.`
+      },
+      adkar: {
+        session: `Session 2: The ADKAR Framework Applied to AI`,
+        focus: `Most AI programs overspend on Awareness and Knowledge and starve Desire and Reinforcement. Check where your budget went.`,
+        tool: `ADKAR Diagnostic for AI`,
+        monday: `Score your initiative on all five ADKAR stages and find the one you've been skipping.`
+      }
+    },
+
+    archetypes: {
+      lean: { name: `Lean and well-timed`, read: `You reached durable adoption without spending everything. Timing and coverage did more than volume: each activity landed in the phase where it works best.` },
+      managers: { name: `Manager-led cascade`, read: `You ran the change through the manager layer. Section chiefs heard it first and coached it after, which is why the message held as it moved down the organization.` },
+      peers: { name: `Peer-powered`, read: `You let caseworkers convince caseworkers. Champions, floor support, and peer stories gave people permission: people like me are doing this.` },
+      sponsor: { name: `Sponsor-led`, read: `You put visible leadership at the center and kept it there. That works when the sponsor uses the tool and the backing outlasts any one person.` },
+      capability: { name: `Capability-first`, read: `You invested in people's skill and time, then made the new way the default in the workflow.` },
+      trainPray: { name: `Train and pray`, read: `Most of your budget went to training. Skills rose, but nothing made the new behavior the one that gets rewarded.` },
+      broadcaster: { name: `Broadcaster`, read: `Most of your budget went to announcements. Awareness was high, but awareness isn't adoption. Communications can't fix a capability or reinforcement problem.` },
+      bigLaunch: { name: `Big launch`, read: `You spent heavily up front and had little left for months 6 to 12. Launch energy fades, and without reinforcement use decays after the spike.` },
+      spreadThin: { name: `Spread thin`, read: `You touched almost every lever lightly. Too many activities at once blurred the message, and few went deep enough to change behavior.` },
+      balanced: { name: `Balanced orchestrator`, read: `You worked all five moves and sequenced them sensibly.` },
+      mixed: { name: `Mixed approach`, read: `Your plan spread across several moves without a clear center of gravity.` }
+    }
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Making AI Stick Simulation: scoring engine.
+   Pure functions over a plain state object. No DOM access, so the same file runs in the page and in Node. */
+(function (root) {
+  'use strict';
+
+  var D = root.SIM_DATA;
+  var STD = [0, 1, 1.7, 2.2];
+  var COND = D.conditions.map(function (c) { return c.id; });
+  var CDEF = {};
+  D.conditions.forEach(function (c) { CDEF[c.id] = c; });
+  var LEV = {};
+  D.levers.forEach(function (l) { LEV[l.id] = l; });
+  var REINFORCING = ['recognition', 'dashboard', 'perfStandards', 'workflow', 'mgrCoach'];
+  var WARN_ORDER = ['managerSkip', 'townhallFirst', 'vagueImpact', 'toolOnly', 'mandateFirst', 'grievance', 'sponsorDecay', 'overloaded', 'fatigue', 'noise', 'wrongMetrics'];
+
+  function clamp(x, lo, hi) { return x < lo ? lo : x > hi ? hi : x; }
+  function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+  function copy(o) { return JSON.parse(JSON.stringify(o)); }
+  function sum(a) { var t = 0; for (var i = 0; i < a.length; i++) t += a[i]; return t; }
+  function curveOf(l) { return l.curve || STD; }
+
+  function lvl(s, n, id) { return (s.plans[n] && s.plans[n][id]) || 0; }
+  function cum(s, id, upTo) { var t = 0; for (var k = 1; k <= upTo; k++) t += lvl(s, k, id); return t; }
+  function maxLevel(s, id, from, to) { var m = 0; for (var k = from; k <= to; k++) m = Math.max(m, lvl(s, k, id)); return m; }
+  function lastPhase(s) { var n = 0; for (var k = 1; k <= 4; k++) if (s.plans[k]) n = k; return n; }
+  function flagPhases(s, key) { var out = []; for (var k = 1; k <= 4; k++) if (s.flags[k] && s.flags[k][key]) out.push(k); return out; }
+
+  function healthOf(v) {
+    for (var i = 0; i < D.health.length; i++) if (v >= D.health[i].min) return D.health[i];
+    return D.health[D.health.length - 1];
+  }
+
+  function stanceOf(v) {
+    for (var i = 0; i < D.stances.length; i++) if (v <= D.stances[i].max) return D.stances[i];
+    return D.stances[D.stances.length - 1];
+  }
+
+  function available(l, n) { return (l.fit[n - 1] || 0) > 0; }
+
+  function availability(l, n) {
+    if (available(l, n)) return { open: true, note: (l.id === 'workflow' && n === 2) ? 'Pilot centers only' : '' };
+    for (var k = n + 1; k <= 4; k++) if (available(l, k)) return { open: false, note: 'Opens in ' + D.phases[k - 1].name };
+    if (l.id === 'mgrPreview') return { open: false, note: 'Only before launch' };
+    var lastOpen = 1;
+    for (var j = 1; j < n; j++) if (available(l, j)) lastOpen = j;
+    return { open: false, note: 'Closed after ' + D.phases[lastOpen - 1].name };
+  }
+
+  function cleanPlan(plan, n) {
+    var out = {};
+    D.levers.forEach(function (l) {
+      var v = Math.max(0, Math.min(3, ((plan && plan[l.id]) | 0)));
+      if (v > 0 && available(l, n)) out[l.id] = v;
+    });
+    return out;
+  }
+
+  function planCost(plan) {
+    var c = 0;
+    for (var id in plan) if (LEV[id] && plan[id] > 0) c += LEV[id].cost * plan[id];
+    return c;
+  }
+
+  // Workforce load: the time a phase's activities demand, measured against what people can absorb.
+  function loadInfo(adapt, plan) {
+    var load = 0, active = 0;
+    for (var id in plan) {
+      if (LEV[id] && plan[id] > 0) { load += LEV[id].load * D.model.loadScale * plan[id]; active++; }
+    }
+    var extra = Math.max(0, active - D.model.focusLimit);
+    load += extra * D.model.noiseLoad;
+    var comfortable = 1.5 + adapt / 12;
+    var overload = comfortable + 3.5;
+    var key = load <= comfortable * 0.6 ? 'light' : load <= comfortable ? 'manageable' : load <= overload ? 'heavy' : 'over';
+    var labels = { light: 'Light', manageable: 'Manageable', heavy: 'Heavy', over: 'Overloaded' };
+    return { load: load, comfortable: comfortable, overload: overload, key: key, label: labels[key], active: active, extra: extra };
+  }
+
+  // Adoption follows the weakest condition: the minimum carries more weight than the average.
+  // Trying the tool doesn't need Reinforcement, but as launch novelty fades, continued use does.
+  var HABIT = [0, 0, 0, 0.25, 0.35, 0.4];
+  function potentials(c, n) {
+    var all = COND.map(function (id) { return c[id]; });
+    var minAll = Math.min.apply(null, all), meanAll = sum(all) / all.length;
+    var sVal = 0.55 * minAll + 0.45 * meanAll;
+    var u = ['conv', 'cap', 'endo', 'coh', 'adapt'].map(function (id) { return c[id]; });
+    var sUsed = 0.35 * Math.min.apply(null, u) + 0.65 * (sum(u) / u.length) + 6 - (HABIT[n || 0] || 0) * Math.max(0, 50 - c.reinf);
+    return { sVal: sVal, sUsed: sUsed, val: sigmoid((sVal - 50) / 7), used: sigmoid((sUsed - 44) / 7) };
+  }
+
+  function personas(s) {
+    var c = s.cond, n = lastPhase(s), out = {};
+    var u = cum(s, 'union', 4), imp = cum(s, 'impact', 4), g = cum(s, 'guardrails', 4);
+    var grieved = s.grievance || flagPhases(s, 'grievance').length > 0;
+    var score = {
+      directors: -0.8 + (c.endo - 45) / 18 + (c.adapt - 42) / 20 + (c.coh - 30) / 40 + (cum(s, 'clearPlate', 4) > 0 ? 0.4 : 0) + (s.winAmplified ? 0.3 : 0),
+      chiefs: (c.endo - 42) / 18 + 0.35 * lvl(s, 1, 'mgrPreview') + 0.12 * cum(s, 'mgrCoach', 4) + (c.cap - 30) / 40 - ((n >= 2 && lvl(s, 1, 'mgrPreview') === 0) ? 0.6 : 0),
+      union: -1 + 0.45 * u + 0.15 * imp + (c.coh - 30) / 50 - (grieved ? 1.2 : 0),
+      newer: 0.5 + (c.cap - 22) / 30 + (c.conv - 30) / 40 - (flagPhases(s, 'overloaded').length ? 0.4 : 0),
+      veterans: -1.4 + (c.conv - 30) / 22 + 0.12 * cum(s, 'labs', 4) + 0.1 * cum(s, 'champions', 4) + 0.12 * imp + 0.08 * cum(s, 'recognition', 4),
+      privacy: -0.2 + (c.coh - 30) / 22 + 0.3 * g - (s.silentHeadline ? 0.8 : 0)
+    };
+    // Stances have inertia: a group moves at most one step-size per phase toward where conditions point.
+    s.pscore = s.pscore || {};
+    D.personas.forEach(function (p) {
+      var target = clamp(score[p.id], -2, 2);
+      var was = s.pscore[p.id] === undefined ? p.start : s.pscore[p.id];
+      var v = n === 0 ? p.start : was + clamp(target - was, -D.model.personaStep, D.model.personaStep);
+      s.pscore[p.id] = v;
+      var st = stanceOf(v);
+      out[p.id] = { score: v, key: st.key, label: st.label };
+    });
+    return out;
+  }
+
+  function snapshot(s, month, n, plan) {
+    var cov = s.coverage;
+    var trained = 0.22 * cum(s, 'elearning', 4) + 0.12 * cum(s, 'labs', 4) + 0.04 * cum(s, 'officehours', 4);
+    var nudges = (plan.email || 0) + (plan.elearning || 0);
+    return {
+      month: month,
+      phase: n,
+      coverage: cov,
+      used: cov * s.rUsed,
+      val: cov * s.rVal,
+      logins: cov > 0 ? cov * Math.min(0.97, 0.45 + 0.5 * s.rUsed + 0.03 * nudges) : 0,
+      training: Math.min(0.98, trained),
+      cond: copy(s.cond),
+      personas: personas(s)
+    };
+  }
+
+  function newGame() {
+    var cond = {}, floors = {};
+    D.conditions.forEach(function (c) { cond[c.id] = c.start; floors[c.id] = c.floor; });
+    var s = {
+      v: 1, stage: 'welcome', phase: 1, credits: D.budget, frozen: 0, eventCredits: 0,
+      cond: cond, floors: floors, rUsed: 0, rVal: 0, coverage: 0, targeting: 1,
+      plans: {}, spend: {}, loads: {}, flags: {}, signals: {}, voices: {},
+      events: {}, pending: [], notice: null, delay: false, grievance: false,
+      silentHeadline: false, winAmplified: false, sponsorHit: 0,
+      contrib: {}, contribCond: {}, credSpent: {},
+      leak: { mistimed: 0, penalty: 0, items: [] },
+      usedVoices: [], history: []
+    };
+    s.history.push(snapshot(s, 0, 0, {}));
+    return s;
+  }
+
+  function voiceById(id) {
+    for (var i = 0; i < D.voices.length; i++) if (D.voices[i].id === id) return D.voices[i];
+    return null;
+  }
+
+  function pickVoices(s, n, flags) {
+    var c = s.cond, cands = [];
+    function add(id, w) { cands.push({ id: id, w: w }); }
+    var imp = cum(s, 'impact', n), g = cum(s, 'guardrails', n);
+    if (c.conv < 45 && imp < 2) add('job', 50 - c.conv);
+    if (c.coh < 45 || (n >= 2 && g === 0)) add('trust', 50 - c.coh);
+    if (c.conv < 40) add('before', 40 - c.conv);
+    if (n >= 2 && (c.adapt < 45 || c.cap < 40)) add('time', Math.max(45 - c.adapt, 40 - c.cap) + 3);
+    if (c.endo < 45 || flags.sponsorDecay) add('leaders', 45 - c.endo + (flags.sponsorDecay ? 10 : 0));
+    if (g === 0 && c.coh < 50) add('obligations', 48 - c.coh);
+    if (flags.mandateFirst || flags.grievance || flags.overloaded) add('forced', 15);
+    if (flags.toolOnly || (n >= 2 && c.cap < 40 && cum(s, 'officehours', n) === 0)) add('once', 12);
+    if (flags.managerSkip) add('skip', 18);
+    if (flags.fatigue) add('fatigue', 14);
+    if (c.conv >= 60) add('pConv', c.conv - 55);
+    if (c.cap >= 60) add('pCap', c.cap - 55);
+    if (c.endo >= 60) add('pEndo', c.endo - 55);
+    if (c.coh >= 60) add('pCoh', c.coh - 55);
+    if (c.reinf >= 60) add('pReinf', c.reinf - 55);
+    if (c.adapt >= 60 && cum(s, 'clearPlate', n) > 0) add('pAdapt', c.adapt - 55);
+    if (n <= 2 && cum(s, 'union', n) >= 2) add('pUnion', 8);
+    cands.forEach(function (v) { if (s.usedVoices.indexOf(v.id) >= 0) v.w -= 12; });
+    var byW = function (a, b) { return b.w - a.w; };
+    var neg = cands.filter(function (v) { return voiceById(v.id).kind === 'neg'; }).sort(byW);
+    var pos = cands.filter(function (v) { return voiceById(v.id).kind === 'pos'; }).sort(byW);
+    var count = 2 + (lvl(s, n, 'listen') > 0 ? 1 : 0) + (lvl(s, n, 'listen') >= 2 ? 1 : 0);
+    var out = [];
+    if (neg.length) out.push(neg.shift());
+    if (pos.length) out.push(pos.shift());
+    var rest = neg.concat(pos).sort(byW);
+    while (out.length < count && rest.length) out.push(rest.shift());
+    out.forEach(function (v) { s.usedVoices.push(v.id); });
+    return out.map(function (v) { return voiceById(v.id); });
+  }
+
+  function commitPhase(s, rawPlan) {
+    var n = s.phase, ph = D.phases[n - 1];
+    var plan = cleanPlan(rawPlan, n);
+    var spend = planCost(plan);
+    if (spend > s.credits + 1e-9) throw new Error('This plan costs more than the credits you have left.');
+    s.credits -= spend;
+    s.plans[n] = plan;
+    s.spend[n] = spend;
+
+    var c0 = copy(s.cond);
+    var li = loadInfo(c0.adapt, plan);
+    s.loads[n] = li;
+    var lv = function (id) { return plan[id] || 0; };
+    var flags = {}, raw = {}, pen = {}, decay = {}, leverRaw = {};
+    COND.forEach(function (id) { raw[id] = 0; pen[id] = 0; decay[id] = 0; });
+
+    var absorb = 0.55 + 0.6 * c0.adapt / 100;
+    var phaseMult = (n === 2 && s.delay) ? 0.85 : 1;
+    var over = li.key === 'over';
+    var overMult = over ? Math.max(0.55, 1 - 0.09 * (li.load - li.overload)) : 1;
+    var noise = li.extra > 0 ? Math.max(0.7, 1 - 0.035 * li.extra) : 1;
+    var fatigue = lv('email') === 3 || (lv('email') + lv('townhall') >= 5);
+    var soften = 1 - 0.1 * lv('listen');
+    var measured = cum(s, 'dashboard', n) > 0;
+    var briefed = cum(s, 'mgrPreview', n) > 0;
+    var briefedEarly = lvl(s, 1, 'mgrPreview') > 0;
+    var unionCum = cum(s, 'union', n);
+
+    D.levers.forEach(function (l) {
+      var level = lv(l.id);
+      if (!level) return;
+      var fit = l.fit[n - 1], crv = curveOf(l)[level];
+      var special = 1;
+      if (l.id === 'email' && fatigue) special *= 0.65;
+      if (l.id === 'townhall') {
+        if (fatigue) special *= 0.65;
+        if (!briefed) { special *= 0.6; flags.townhallFirst = true; }
+        else if (briefedEarly) special *= 1.15;
+      }
+      if ((l.id === 'labs' || l.id === 'officehours') && lv('labs') && lv('officehours')) special *= 1.15;
+      if (l.id === 'champions' && n > 1 && lvl(s, n - 1, 'champions')) special *= 1.12;
+      if (l.id === 'recognition') {
+        if (lv('champions')) special *= 1.1;
+        if (measured) special *= 1.15;
+      }
+      if (l.id === 'perfStandards') {
+        if (c0.cap < 45) { special *= 0.6; flags.mandateFirst = true; }
+        if (unionCum < 2) { special *= 0.8; flags.grievance = true; } else special *= 1.15;
+      }
+      if (!measured && (l.id === 'recognition' || l.id === 'perfStandards' || l.id === 'mgrCoach')) special *= 0.85;
+      if (n >= 2 && !briefedEarly && (l.id === 'mgrCoach' || l.id === 'email' || l.id === 'townhall')) special *= 0.8;
+      if (n >= 2 && n <= 3 && cum(s, 'impact', n) === 0 && l.effects.conv) special *= 0.8;
+
+      var drag = overMult * noise * phaseMult * Math.min(1, special);
+      var m = crv * fit * absorb * s.targeting * special * overMult * noise * phaseMult * D.model.gain * D.model.phaseGain[n - 1];
+      var per = {};
+      for (var cid in l.effects) { per[cid] = l.effects[cid] * m; raw[cid] += per[cid]; }
+      leverRaw[l.id] = per;
+
+      var credits = l.cost * level;
+      s.credSpent[l.id] = (s.credSpent[l.id] || 0) + credits;
+      if (fit < 0.85) {
+        s.leak.mistimed += credits * (1 - fit);
+        s.leak.items.push({ id: l.id, phase: n, kind: 'mistimed', credits: credits * (1 - fit) });
+      }
+      if (drag < 0.97) {
+        s.leak.penalty += credits * (1 - drag);
+        s.leak.items.push({ id: l.id, phase: n, kind: 'penalty', credits: credits * (1 - drag) });
+      }
+    });
+
+    if (fatigue) { pen.conv -= 2.5; flags.fatigue = true; }
+    if (flags.townhallFirst) pen.conv -= 2;
+    if (over) { pen.conv -= 1.5 * (li.load - li.overload); flags.overloaded = true; }
+    if (noise < 0.96) flags.noise = true;
+    if (flags.mandateFirst) { pen.conv -= 6; pen.adapt -= 4; }
+    if (flags.grievance) pen.coh -= 5;
+    if (n >= 3 && lv('sponsor') === 0 && maxLevel(s, 'sponsor', 1, n - 1) >= 2) { pen.endo -= 6; flags.sponsorDecay = true; }
+    if (n === 2 && lvl(s, 1, 'mgrPreview') === 0) {
+      flags.managerSkip = true;
+      pen.endo -= lv('mgrPreview') >= 2 ? 3 : 6;
+      pen.conv -= 3;
+    }
+    if (n === 2 && cum(s, 'impact', 2) === 0) { flags.vagueImpact = true; pen.conv -= 6; }
+    if (n === 3 && cum(s, 'impact', 3) === 0) pen.conv -= 4;
+    var practice = function (k) { return (lvl(s, k, 'labs') >= 2 ? 1 : 0) + lvl(s, k, 'officehours') + lvl(s, k, 'champions'); };
+    if (n >= 2 && lv('elearning') > 0 && practice(n) + (n > 2 ? practice(n - 1) : 0) === 0) { flags.toolOnly = true; pen.conv -= 2; }
+    if (n >= 2 && !measured) flags.wrongMetrics = true;
+
+    var reinfNow = sum(REINFORCING.map(lv));
+    COND.forEach(function (id) {
+      var rate = CDEF[id].decay;
+      if (!rate) return;
+      if (id === 'endo' && lv('sponsor') === 0) rate *= 1.5;
+      if (id === 'reinf' && n >= 3 && reinfNow <= 1) rate *= 1.25;
+      decay[id] = rate * D.model.decayScale * ph.len * Math.max(0, c0[id] - s.floors[id]);
+    });
+
+    var dAdapt = 0;
+    if (li.load > li.comfortable) dAdapt -= (li.load - li.comfortable) * 1.1;
+    else dAdapt += 1.2 * (1 - li.load / li.comfortable) * (ph.len / 3);
+    dAdapt += 5 * s.rVal * s.coverage * (ph.len / 3);
+
+    var hf = {};
+    COND.forEach(function (id) {
+      hf[id] = Math.max(0.05, 1 - c0[id] / D.model.headroom);
+      var p = pen[id] < 0 ? pen[id] * soften : pen[id];
+      var v = c0[id] - decay[id] + raw[id] * hf[id] + p + (id === 'adapt' ? dAdapt : 0);
+      s.cond[id] = clamp(v, 0, 100);
+    });
+
+    for (var lid in leverRaw) {
+      var tot = 0;
+      s.contribCond[lid] = s.contribCond[lid] || {};
+      for (var cid2 in leverRaw[lid]) {
+        var a = leverRaw[lid][cid2] * hf[cid2];
+        tot += a;
+        s.contribCond[lid][cid2] = (s.contribCond[lid][cid2] || 0) + a;
+      }
+      s.contrib[lid] = (s.contrib[lid] || 0) + tot;
+    }
+
+    if (lv('assess') > 0) s.targeting = Math.max(s.targeting, 1 + 0.04 * lv('assess'));
+
+    // Structural changes outlast the program office: they raise the floor each condition decays toward.
+    if (n >= 3) {
+      s.floors.coh += 2 * lv('workflow');
+      s.floors.reinf += 1.5 * lv('workflow') + (flags.mandateFirst ? 0 : 2 * lv('perfStandards')) + lv('mgrCoach');
+      s.floors.endo += 1.2 * lv('mgrCoach');
+    }
+    if (n === 4) {
+      s.floors.cap += lv('champions');
+      s.floors.conv += 0.8 * lv('champions') + 0.8 * lv('recognition');
+    }
+    COND.forEach(function (id) { s.floors[id] = Math.min(s.floors[id], 50); });
+
+    var prevVal = s.coverage * s.rVal;
+    var covOld = s.coverage, covNew = ph.coverage;
+    if (n === 2 && s.delay) covNew = 0.4;
+    if (covNew > covOld && covOld > 0) {
+      var f = (covOld + D.model.newCenterStart * (covNew - covOld)) / covNew;
+      s.rUsed *= f;
+      s.rVal *= f;
+    }
+    s.coverage = covNew;
+    if (covNew > 0) {
+      var pot = potentials(s.cond, n);
+      s.rUsed += (1 - Math.pow(1 - D.model.usedSpeed, ph.len)) * (pot.used - s.rUsed);
+      s.rVal += (1 - Math.pow(1 - D.model.valSpeed, ph.len)) * (pot.val - s.rVal);
+      s.rVal = Math.min(s.rVal, s.rUsed);
+    }
+
+    var sigs = [];
+    WARN_ORDER.forEach(function (k) { if (flags[k]) sigs.push({ key: k, tone: 'warn', text: D.signals[k] }); });
+    if (n >= 3 && s.coverage * s.rVal < prevVal - 0.02) sigs.push({ key: 'decaying', tone: 'warn', text: D.signals.decaying });
+    var good = [];
+    if (n === 2 && s.rVal > 0.35) good.push('goodPilot');
+    if (lv('mgrCoach') >= 2) good.push('goodCoaching');
+    if (n <= 2 && lv('union') >= 2) good.push('goodUnion');
+    if (lv('clearPlate') >= 1) good.push('goodPlate');
+    good.forEach(function (k) { sigs.push({ key: k, tone: 'good', text: D.signals[k] }); });
+    var warnings = sigs.filter(function (x) { return x.tone === 'warn'; }).slice(0, 3);
+    var goods = sigs.filter(function (x) { return x.tone === 'good'; }).slice(0, 4 - warnings.length);
+    s.signals[n] = warnings.concat(goods);
+    s.flags[n] = flags;
+    s.voices[n] = pickVoices(s, n, flags);
+
+    var snap = snapshot(s, ph.end, n, plan);
+    snap.visible = { meaningful: measured, sentiment: lv('listen') > 0 };
+    s.history.push(snap);
+
+    s.pending = [];
+    if (n === 1) {
+      if (lv('union') >= 2) {
+        s.cond.coh = clamp(s.cond.coh + 3, 0, 100);
+        s.events.union = { option: 'auto', cost: 0, fx: { coh: 3 } };
+        s.pending.push({ id: 'union', resolved: true, auto: true });
+      } else {
+        s.pending.push({ id: 'union', resolved: false });
+      }
+    }
+    if (n === 2) {
+      s.pending.push({ id: 'headline', resolved: false });
+      if (s.rVal >= 0.33 || (s.cond.cap >= 55 && s.cond.conv >= 55)) s.pending.push({ id: 'win', resolved: false });
+    }
+    if (n === 3) s.pending.push({ id: 'sponsor', resolved: false });
+    s.stage = 'pulse';
+    return snap;
+  }
+
+  // How well the change survives losing its sponsor: a sponsor group and coaching managers spread the backing.
+  function coalition(s) {
+    var groupPhases = 0;
+    for (var k = 1; k <= 3; k++) if (lvl(s, k, 'sponsor') >= 2) groupPhases++;
+    var coach = cum(s, 'mgrCoach', 3);
+    var cs = (groupPhases >= 2 ? 0.45 : groupPhases === 1 ? 0.2 : 0) +
+      (coach >= 3 ? 0.3 : coach >= 1 ? 0.15 : 0) +
+      (cum(s, 'champions', 3) >= 3 ? 0.15 : 0);
+    return Math.min(0.85, cs);
+  }
+
+  function resolveEvent(s, id, optId) {
+    var ev = D.events[id], opt = null;
+    for (var i = 0; i < ev.options.length; i++) if (ev.options[i].id === optId) opt = ev.options[i];
+    if (!opt) throw new Error('Unknown option.');
+    if (opt.cost > s.credits + 1e-9) throw new Error('You don\'t have enough credits for that option.');
+    s.credits -= opt.cost;
+    s.eventCredits += opt.cost;
+    var c = s.cond, fx = {};
+    function add(k, v) { c[k] = clamp(c[k] + v, 0, 100); fx[k] = (fx[k] || 0) + v; }
+    if (id === 'union') {
+      if (optId === 'negotiate') { add('coh', 3); add('conv', 1); }
+      if (optId === 'proceed') { add('coh', -7); add('conv', -4); s.grievance = true; }
+      if (optId === 'delay') { add('coh', 2); s.delay = true; }
+    }
+    if (id === 'headline') {
+      var m = Math.min(1, (cum(s, 'guardrails', 2) / 3) * 0.7 + (c.conv >= 55 ? 0.3 : 0));
+      add('conv', -10 * (1 - 0.7 * m));
+      add('coh', -5 * (1 - 0.7 * m));
+      if (optId === 'qa') { add('conv', 7); add('endo', 3); add('coh', 2); }
+      if (optId === 'faq') { add('conv', 3); add('coh', 3); }
+      if (optId === 'silent') s.silentHeadline = true;
+    }
+    if (id === 'win' && optId === 'amplify') { add('conv', 6); add('reinf', 3); s.winAmplified = true; }
+    if (id === 'sponsor') {
+      var cs = coalition(s);
+      s.sponsorHit = 12 * (1 - cs);
+      add('endo', -12 * (1 - cs));
+      add('conv', -3 * (1 - cs));
+      if (optId === 'brief') add('endo', 6);
+      if (optId === 'admin') { add('endo', 8); add('conv', 2); }
+    }
+    s.events[id] = { option: optId, cost: opt.cost, fx: fx };
+    s.pending.forEach(function (p) { if (p.id === id) p.resolved = true; });
+    var last = s.history[s.history.length - 1];
+    last.afterEvents = copy(s.cond);
+    return fx;
+  }
+
+  function enterNextPhase(s) {
+    for (var i = 0; i < s.pending.length; i++) if (!s.pending[i].resolved) throw new Error('Choose a response to the event first.');
+    s.pending = [];
+    if (s.phase >= 4) { s.stage = 'm18'; return; }
+    s.phase += 1;
+    s.notice = null;
+    if (s.phase === 4) {
+      var frozen = Math.round(s.credits * 0.15);
+      s.credits -= frozen;
+      s.frozen = frozen;
+      var hit = (s.cond.adapt >= 60 || lvl(s, 3, 'clearPlate') > 0) ? -2 : -5;
+      s.cond.adapt = clamp(s.cond.adapt + hit, 0, 100);
+      s.notice = { id: 'cr', frozen: frozen, adapt: hit };
+    }
+    s.stage = 'plan';
+  }
+
+  // Six months after the program office closes. No spending; only what was embedded holds.
+  function runMonth18(s) {
+    var c = s.cond, before = copy(c);
+    var embed = 0.5 * c.reinf / 100 + 0.25 * c.coh / 100 + 0.25 * c.endo / 100;
+    var post = Math.max(0.35, 1.45 - 1.3 * embed);
+    COND.forEach(function (id) {
+      var r = CDEF[id].decay;
+      if (!r) return;
+      c[id] = clamp(c[id] - r * D.model.decayScale * 6 * post * Math.max(0, c[id] - s.floors[id]), 0, 100);
+    });
+    c.adapt = clamp(c.adapt + 4 + 10 * s.rVal, 0, 100);
+    var pot = potentials(c, 5);
+    s.rUsed += (1 - Math.pow(1 - D.model.usedSpeed, 6)) * (pot.used - s.rUsed);
+    s.rVal += (1 - Math.pow(1 - D.model.valSpeed, 6)) * (pot.val - s.rVal);
+    s.rVal = Math.min(s.rVal, s.rUsed);
+    var snap = snapshot(s, 18, 5, {});
+    snap.before = before;
+    snap.embed = embed;
+    s.history.push(snap);
+    s.stage = 'debrief';
+    return snap;
+  }
+
+  function analyze(s) {
+    var H = s.history, last = H[H.length - 1];
+    var m12 = H.filter(function (h) { return h.month === 12; })[0] || last;
+    var pct = function (x) { return Math.round(x * 100); };
+    var val18 = pct(last.val);
+    var peak = H.reduce(function (a, h) { return h.val > a.val ? h : a; }, H[0]);
+    var peakUse = H.reduce(function (a, h) { return h.used > a.used ? h : a; }, H[0]);
+    var used18 = pct(last.used);
+    var valSlid = pct(peak.val) >= 50 && pct(peak.val) - val18 >= 8;
+    var useSlid = pct(peakUse.used) >= 55 && pct(peakUse.used) - used18 >= 12;
+    var sortedConds = COND.slice().sort(function (a, b) { return last.cond[a] - last.cond[b]; });
+    var weakest = sortedConds[0];
+    var minCond = last.cond[weakest];
+    var name = function (id) { return CDEF[id].name; };
+
+    var tier;
+    if (val18 >= D.successRate && minCond >= D.riskLine) tier = 'stuck';
+    else if (val18 >= D.successRate) tier = 'fragile';
+    else if (valSlid || useSlid) tier = 'slipped';
+    else if (val18 >= 60) tier = 'close';
+    else tier = 'stalled';
+    var titles = { stuck: 'It stuck', fragile: 'It stuck, barely', slipped: 'It didn\'t stick', close: 'Almost there', stalled: 'It stalled' };
+    var summaries = {
+      stuck: val18 + '% of caseworkers were still using the assistant meaningfully at month 18, six months after the program office closed. All six conditions held.',
+      fragile: val18 + '% meaningful use at month 18, but ' + name(weakest) + ' is at risk. Expect it to slip the next time something else lands on the agency.',
+      slipped: valSlid
+        ? 'Meaningful use peaked at ' + pct(peak.val) + '% in month ' + peak.month + ' and slid to ' + val18 + '% by month 18. The launch worked. The sustaining didn\'t.'
+        : 'Active use peaked at ' + pct(peakUse.used) + '% in month ' + peakUse.month + ' and fell to ' + used18 + '% by month 18, and only ' + val18 + '% ever used it in a way that changed the work. The launch got people to try it. Nothing made it stick.',
+      close: val18 + '% meaningful use at month 18. Real progress, but short of the 80% bar. ' + name(weakest) + ' held you back.',
+      stalled: 'Meaningful use reached ' + val18 + '% at month 18. The tool is live, but for most caseworkers the work hasn\'t changed.'
+    };
+
+    var total = 0, byMove = {}, byPhase = {}, ad = { A: 0, D: 0, K: 0, B: 0, R: 0 }, cells = 0, deep = 0, distinct = {};
+    D.moves.forEach(function (m) { byMove[m.id] = 0; });
+    for (var n = 1; n <= 4; n++) {
+      byPhase[n] = 0;
+      var p = s.plans[n] || {};
+      for (var id in p) {
+        var l = LEV[id], cr = l.cost * p[id];
+        total += cr;
+        byPhase[n] += cr;
+        byMove[l.move] += cr;
+        if (l.adkar) ad[l.adkar] += cr;
+        cells++;
+        if (p[id] >= 2) deep++;
+        distinct[id] = true;
+      }
+    }
+    var share = {};
+    for (var mv in byMove) share[mv] = total ? byMove[mv] / total : 0;
+    var adTotal = ad.A + ad.D + ad.K + ad.B + ad.R;
+    var akShare = adTotal ? (ad.A + ad.K) / adTotal : 0;
+    var drShare = adTotal ? (ad.D + ad.R) / adTotal : 0;
+
+    var success = tier === 'stuck' || tier === 'fragile';
+    var early = total ? (byPhase[1] + byPhase[2]) / total : 0, late = total ? byPhase[4] / total : 0;
+    var nDistinct = Object.keys(distinct).length;
+    var arch;
+    if (success) {
+      if (s.credits >= 12) arch = 'lean';
+      else if (lvl(s, 1, 'mgrPreview') >= 2 && cum(s, 'mgrCoach', 4) >= 4) arch = 'managers';
+      else if (cum(s, 'champions', 4) >= 5 || (cum(s, 'champions', 4) >= 4 && cum(s, 'recognition', 4) >= 3)) arch = 'peers';
+      else if (cum(s, 'sponsor', 4) >= 6 && cum(s, 'townhall', 4) >= 2) arch = 'sponsor';
+      else if (share.train >= 0.33) arch = 'capability';
+      else arch = 'balanced';
+    } else {
+      if (nDistinct >= 12 && deep <= 3) arch = 'spreadThin';
+      else if (early >= 0.62 && late <= 0.12) arch = 'bigLaunch';
+      else if (share.communicate >= 0.4) arch = 'broadcaster';
+      else if (share.train >= 0.35 && share.reinforce < 0.15) arch = 'trainPray';
+      else arch = 'mixed';
+    }
+
+    var hits = {};
+    var sd = flagPhases(s, 'sponsorDecay');
+    if (sd.length) hits.sponsorDecay = 'Showed up in ' + sd.map(function (k) { return D.phases[k - 1].name; }).join(' and ');
+    else if (s.events.sponsor && s.events.sponsor.option === 'carry' && s.sponsorHit >= 6) hits.sponsorDecay = 'When your sponsor was reassigned, nobody picked up the role';
+    else if (cum(s, 'sponsor', 2) >= 2 && cum(s, 'sponsor', 4) - cum(s, 'sponsor', 2) === 0) hits.sponsorDecay = 'Sponsorship stopped after launch';
+    if (lvl(s, 1, 'mgrPreview') === 0) hits.managerSkip = 'Section chiefs weren\'t briefed before launch';
+    var practiceTotal = 0;
+    for (var k2 = 2; k2 <= 3; k2++) practiceTotal += (lvl(s, k2, 'labs') >= 2 ? 1 : 0) + lvl(s, k2, 'officehours') + lvl(s, k2, 'champions');
+    if (flagPhases(s, 'toolOnly').length || (cum(s, 'elearning', 4) >= 2 && practiceTotal <= 1)) hits.toolOnly = 'Courses without practice on real cases';
+    if (cum(s, 'impact', 2) === 0) hits.vagueImpact = 'No one said what changes for people\'s jobs before launch';
+    if (cum(s, 'dashboard', 3) === 0) hits.wrongMetrics = cum(s, 'dashboard', 4) === 0 ? 'You never measured meaningful use' : 'You measured only logins until Sustain';
+    var lateReinf = 0;
+    for (var k3 = 3; k3 <= 4; k3++) REINFORCING.forEach(function (id) { lateReinf += lvl(s, k3, id); });
+    if (lateReinf <= 3) hits.noReinforcement = 'Little reinforcement in Scale and Sustain';
+    var ov = flagPhases(s, 'overloaded');
+    if (ov.length) hits.overloaded = 'Workload went over capacity in ' + ov.map(function (k) { return D.phases[k - 1].name; }).join(' and ');
+    var patterns = D.patterns.map(function (p) { return { id: p.id, name: p.name, desc: p.desc, hit: !!hits[p.id], where: hits[p.id] || '' }; });
+    var nHits = patterns.filter(function (p) { return p.hit; }).length;
+
+    var rows = Object.keys(s.contrib).map(function (id) {
+      var cc = s.contribCond[id] || {}, top = null;
+      for (var cid in cc) if (!top || cc[cid] > cc[top]) top = cid;
+      return { id: id, name: LEV[id].name, credits: s.credSpent[id], gain: s.contrib[id], per: s.contrib[id] / s.credSpent[id], top: top, topName: top ? name(top) : '' };
+    });
+    var worked = rows.filter(function (r) { return r.credits >= 2; }).sort(function (a, b) { return b.per - a.per; }).slice(0, 3);
+    var leakBy = {};
+    s.leak.items.forEach(function (it) {
+      var key = it.id + ':' + it.kind;
+      if (!leakBy[key]) leakBy[key] = { id: it.id, name: LEV[it.id].name, kind: it.kind, credits: 0, phases: [] };
+      leakBy[key].credits += it.credits;
+      if (leakBy[key].phases.indexOf(it.phase) < 0) leakBy[key].phases.push(it.phase);
+    });
+    var leaks = Object.keys(leakBy).map(function (k) { return leakBy[k]; }).filter(function (x) { return x.credits >= 1; })
+      .sort(function (a, b) { return b.credits - a.credits; }).slice(0, 3);
+
+    var learn = [{ key: weakest, cond: name(weakest), item: D.learning[weakest] }];
+    var second = sortedConds[1];
+    if (last.cond[second] - minCond <= 6 && last.cond[second] < 70) learn.push({ key: second, cond: name(second), item: D.learning[second] });
+    if (nHits >= 2) learn.push({ key: 'patterns', cond: '', item: D.learning.patterns });
+    else if (akShare >= 0.55) learn.push({ key: 'adkar', cond: '', item: D.learning.adkar });
+    learn = learn.slice(0, 3);
+
+    var leverRows = D.levers.filter(function (l) { return cum(s, l.id, 4) > 0; }).map(function (l) {
+      return { id: l.id, name: l.name, move: l.move, levels: [1, 2, 3, 4].map(function (k) { return lvl(s, k, l.id); }), credits: s.credSpent[l.id] || 0 };
+    });
+
+    return {
+      tier: tier, title: titles[tier], summary: summaries[tier], success: success,
+      val18: val18, used18: used18, logins18: pct(last.logins), val12: pct(m12.val),
+      peakVal: pct(peak.val), peakMonth: peak.month, peakUsed: pct(peakUse.used), peakUsedMonth: peakUse.month,
+      weakest: weakest, weakestName: name(weakest), minCond: minCond,
+      cond18: last.cond, cond12: m12.cond, condStart: H[0].cond,
+      series: H.map(function (h) { return { month: h.month, val: h.val, used: h.used, logins: h.logins, coverage: h.coverage }; }),
+      archetype: { key: arch, name: D.archetypes[arch].name, read: D.archetypes[arch].read },
+      patterns: patterns, patternHits: nHits,
+      worked: worked, leaks: leaks,
+      byMove: byMove, share: share, byPhase: byPhase, total: total,
+      adkar: ad, akShare: akShare, drShare: drShare,
+      learn: learn, nextMove: D.learning[weakest].monday,
+      leverRows: leverRows,
+      credits: { levers: total, events: s.eventCredits, frozen: s.frozen, left: s.credits },
+      events: s.events
+    };
+  }
+
+  root.SIM = {
+    newGame: newGame,
+    available: available,
+    availability: availability,
+    cleanPlan: cleanPlan,
+    planCost: planCost,
+    loadInfo: loadInfo,
+    potentials: potentials,
+    commitPhase: commitPhase,
+    resolveEvent: resolveEvent,
+    enterNextPhase: enterNextPhase,
+    runMonth18: runMonth18,
+    analyze: analyze,
+    coalition: coalition,
+    healthOf: healthOf,
+    stanceOf: stanceOf,
+    lvl: lvl,
+    cum: cum,
+    COND: COND,
+    LEV: LEV
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Making AI Stick Simulation: screens and interaction. Reads SIM_DATA, drives the SIM engine. */
+(function () {
+  'use strict';
+
+  var D = window.SIM_DATA;
+  var S = window.SIM;
+  var STORE = 'making-ai-stick-simulation-v1';
+  var CAN_PRINT = !!(window.SIM_BUILD && window.SIM_BUILD.standalone);
+  var app = document.getElementById('app');
+  var topbar = document.getElementById('topbar');
+  var ui = freshUi();
+  var lastAnalysis = null;
+
+  function freshUi() {
+    return {
+      view: 'welcome', game: null, draft: {}, confirm: false, choices: {},
+      reflection: { fix: '', pattern: '', move: '' }, attempts: [], recorded: false, resetAsk: false
+    };
+  }
+
+  /* ---------- storage ---------- */
+
+  function persisted() {
+    return { view: ui.view, game: ui.game, draft: ui.draft, choices: ui.choices, reflection: ui.reflection, attempts: ui.attempts, recorded: ui.recorded };
+  }
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(persisted())); } catch (e) { /* storage blocked: the run still works */ }
+  }
+  function loadStored() {
+    try { var raw = localStorage.getItem(STORE); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function restore(obj) {
+    if (!obj) return;
+    ['view', 'game', 'draft', 'choices', 'reflection', 'attempts', 'recorded'].forEach(function (k) {
+      if (obj[k] !== undefined && obj[k] !== null) ui[k] = obj[k];
+    });
+    if (ui.game && ui.game.v !== 1) ui.game = null;
+    if (ui.view !== 'welcome' && !ui.game) ui.view = 'welcome';
+  }
+
+  /* ---------- helpers ---------- */
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function pct(x) { return Math.round(x * 100); }
+  function cname(id) { for (var i = 0; i < D.conditions.length; i++) if (D.conditions[i].id === id) return D.conditions[i].name; return id; }
+  function cdef(id) { for (var i = 0; i < D.conditions.length; i++) if (D.conditions[i].id === id) return D.conditions[i]; return null; }
+  function phase(n) { return D.phases[n - 1]; }
+  function healthChip(v) { var h = S.healthOf(v); return '<span class="chip h-' + h.key + '"><i class="dot"></i>' + h.label + '</span>'; }
+  function stanceChip(st) { return '<span class="chip st-' + st.key + '"><i class="dot"></i>' + st.label + '</span>'; }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function moveName(id) { for (var i = 0; i < D.moves.length; i++) if (D.moves[i].id === id) return D.moves[i].name; return id; }
+
+  var ICON = {
+    warn: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="#d03b3b" stroke-width="1.6"/><path d="M8 4.3v4.4" stroke="#d03b3b" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.3" r="1.05" fill="#d03b3b"/></svg>',
+    good: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="#1f9d48" stroke-width="1.6"/><path d="M4.9 8.2l2.1 2.1 4.1-4.5" fill="none" stroke="#1f9d48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    mark: '<svg width="24" height="20" viewBox="0 0 24 20" aria-hidden="true"><rect x="0" y="8" width="3" height="12" rx="1" fill="#1c5cab"/><rect x="4.2" y="4" width="3" height="16" rx="1" fill="#1c5cab"/><rect x="8.4" y="9" width="3" height="11" rx="1" fill="#1c5cab"/><rect x="12.6" y="2" width="3" height="18" rx="1" fill="#1c5cab"/><rect x="16.8" y="6" width="3" height="14" rx="1" fill="#1c5cab"/><rect x="21" y="0" width="3" height="20" rx="1" fill="#1c5cab"/></svg>'
+  };
+
+  function timeDemand(l) {
+    if (l.load < 0) return 'Frees up time';
+    if (l.load <= 0.12) return 'Low';
+    if (l.load <= 0.45) return 'Medium';
+    return 'High';
+  }
+  function builds(l) {
+    return Object.keys(l.effects).filter(function (k) { return l.effects[k] >= 2; })
+      .sort(function (a, b) { return l.effects[b] - l.effects[a]; }).slice(0, 2).map(cname);
+  }
+  function measured(g, upTo) { return S.cum(g, 'dashboard', upTo) > 0; }
+
+  /* ---------- top bar and status ---------- */
+
+  function renderTopbar() {
+    topbar.innerHTML = '<div class="wrap topbar-in"><div class="brand">' + ICON.mark +
+      '<span class="brand-name">' + esc(D.meta.course) + '</span><span class="brand-sub">Adoption simulation</span></div>' +
+      '<div class="facil">Facilitator: ' + esc(D.meta.facilitator) + '</div></div>';
+  }
+
+  function stepper(g) {
+    var items = D.phases.map(function (p) {
+      var cls = (p.n < g.phase || (p.n === g.phase && g.stage !== 'plan')) ? 'done' : (p.n === g.phase ? 'current' : '');
+      return '<li class="' + cls + '" title="' + esc(p.name) + '"' + (cls === 'current' ? ' aria-current="step"' : '') + '>' + esc(p.short) + '</li>';
+    });
+    var m18 = g.stage === 'm18' || g.stage === 'debrief' ? 'current' : '';
+    items.push('<li class="' + m18 + '">Month 18</li>');
+    return '<ol class="stepper" aria-label="Timeline">' + items.join('') + '</ol>';
+  }
+
+  function statusInner() {
+    var g = ui.game, planning = g.stage === 'plan';
+    var plan = planning ? S.cleanPlan(ui.draft, g.phase) : {};
+    var cost = S.planCost(plan), left = g.credits - cost;
+    var html = stepper(g);
+    html += '<div class="credits"><span class="credits-num' + (left < 0 ? ' over' : '') + '">' + left + '</span>' +
+      '<span class="credits-lab">' + (left < 0 ? '<b>credits over budget</b>' : 'credits left') + '<br>' +
+      (planning ? '<b>' + cost + '</b> this phase' : 'of ' + D.budget) + '</span></div>';
+    if (planning) {
+      var li = S.loadInfo(g.cond.adapt, plan);
+      html += '<div class="gauge g-' + li.key + '" title="How much time this phase asks of caseworkers and supervisors, compared with what they can absorb right now.">' +
+        '<div class="gauge-top"><span>Workforce load</span><b>' + li.label + '</b></div>' +
+        '<div class="gauge-bar"><span></span><span></span><span></span><span></span></div></div>';
+      html += '<button class="btn btn-primary btn-sm" data-action="to-commit">Commit ' + esc(phase(g.phase).name) + '</button>';
+    }
+    return '<div class="wrap status-in">' + html + '</div>';
+  }
+  function statusBar() { return '<div class="status" id="status" role="region" aria-label="Simulation status">' + statusInner() + '</div>'; }
+
+  /* ---------- welcome ---------- */
+
+  function welcome() {
+    var g = ui.game;
+    var finished = g && (g.stage === 'debrief');
+    var inProgress = g && !finished;
+    var acts;
+    if (ui.resetAsk) {
+      acts = '<div class="callout warn"><h3>Start over?</h3><p>This clears the run in progress. Your past results stay in the list at the end of the debrief.</p>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="reset">Start over</button><button class="btn" data-action="cancel-reset">Keep my run</button></div></div>';
+    } else if (inProgress) {
+      var where = g.stage === 'plan' ? 'Resume ' + phase(g.phase).name : g.stage === 'pulse' ? 'Resume ' + phase(g.phase).name + ' pulse check' : 'Resume at month 18';
+      acts = '<div class="actions"><button class="btn btn-primary" data-action="resume">' + esc(where) + '</button>' +
+        '<button class="btn btn-quiet" data-action="read-case">Reread the case</button>' +
+        '<button class="btn btn-quiet" data-action="ask-reset">Start over</button></div>';
+    } else if (finished) {
+      acts = '<div class="actions"><button class="btn btn-primary" data-action="replay">Play again</button>' +
+        '<button class="btn" data-action="resume">See your last debrief</button></div>';
+    } else {
+      acts = '<div class="actions"><button class="btn btn-primary" data-action="read-case">Read the case</button></div>';
+    }
+    var conds = D.conditions.map(function (c, i) {
+      return '<div class="cond-item"><span class="cond-n">0' + (i + 1) + '</span><h3>' + esc(c.name) + '</h3><p>' + esc(c.question) + '</p></div>';
+    }).join('');
+    return '<main class="wrap screen">' +
+      '<section class="hero">' +
+        '<p class="eyebrow">' + esc(D.meta.course) + ' · Adoption simulation</p>' +
+        '<h1 class="display" tabindex="-1">The tool is live.<br>Make it stick.</h1>' +
+        '<p class="lead">You\'re the change lead for an AI drafting assistant at a federal benefits agency. You have 100 change credits and four rounds to get 4,200 caseworkers using it in their real work. Then the program office closes, and month 18 tells you whether it stuck.</p>' +
+        acts +
+      '</section>' +
+      '<div class="facts">' +
+        '<div class="fact"><b>4</b><span>rounds of decisions</span></div>' +
+        '<div class="fact"><b>100</b><span>change credits</span></div>' +
+        '<div class="fact"><b>20</b><span>levers to dial up or down</span></div>' +
+        '<div class="fact"><b>40 min</b><span>to play, plus debrief</span></div>' +
+        '<div class="fact"><b>Private</b><span>saved only in this browser</span></div>' +
+      '</div>' +
+      '<section class="stack-lg">' +
+        '<div class="section-head"><h2>Scored on the Six Conditions of Durable Change</h2>' +
+        '<p>Adoption follows the weakest condition. Strength in one doesn\'t make up for weakness in another.</p></div>' +
+        '<div class="conds">' + conds + '</div>' +
+      '</section>' +
+      '<section class="stack-lg">' +
+        '<div class="section-head"><h2>How a round works</h2></div>' +
+        '<ol class="steps">' +
+          '<li><h3>Plan</h3><p>Set each lever from Off to Intensive. Higher settings cost more credits and take more of people\'s time.</p></li>' +
+          '<li><h3>Commit</h3><p>Lock the phase in. Like real life, you can\'t go back and change it.</p></li>' +
+          '<li><h3>Pulse check</h3><p>See what moved: adoption, the six conditions, and what people are saying.</p></li>' +
+          '<li><h3>Respond</h3><p>Something happens. Choose how to handle it, then plan the next phase.</p></li>' +
+        '</ol>' +
+      '</section>' +
+      '<section class="callout accent"><h3>What counts as success</h3><p>' + esc(D.case.success) + '</p></section>' +
+      '<p class="muted small">Playing in a pod? Put one screen up, let one person drive, and argue about every slider.</p>' +
+    '</main>';
+  }
+
+  /* ---------- case ---------- */
+
+  function healthRows(cond, opts) {
+    opts = opts || {};
+    return '<div class="health-list">' + D.conditions.map(function (c) {
+      var v = cond[c.id];
+      var prev = opts.prev ? opts.prev[c.id] : null;
+      var delta = '';
+      if (prev !== null && prev !== undefined) {
+        var d = v - prev;
+        delta = d >= 1.5 ? '<span class="delta up">↑ Up</span>' : d <= -1.5 ? '<span class="delta down">↓ Down</span>' : '<span class="delta flat">Flat</span>';
+      }
+      var sub = opts.notes ? esc(D.startNotes[c.id]) : esc(c.question);
+      return '<div class="health-row"><div><div class="hn">' + esc(c.name) + '</div><div class="hq">' + sub + '</div></div>' +
+        '<div class="track" aria-hidden="true"><span class="riskline" style="left:' + D.riskLine + '%"></span><span class="fill" style="width:' + Math.max(1, Math.round(v)) + '%"></span>' +
+        (prev !== null && prev !== undefined ? '<span class="ghost" style="left:' + Math.round(prev) + '%"></span>' : '') + '</div>' +
+        '<div class="health-right">' + delta + healthChip(v) + '</div></div>';
+    }).join('') + '</div>';
+  }
+
+  function caseScreen() {
+    var C = D.case, g = ui.game;
+    var people = C.leaders.map(function (p) {
+      return '<div class="person"><div class="person-top"><div><h3>' + esc(p.name) + '</h3><div class="who">Leadership</div></div>' + stanceChip({ key: 'supportive', label: p.stance }) + '</div><p>' + esc(p.note) + '</p></div>';
+    }).concat(D.personas.map(function (p) {
+      return '<div class="person"><div class="person-top"><div><h3>' + esc(p.name) + '</h3><div class="who">' + esc(p.who) + ' · ' + esc(p.quadrant) + '</div></div>' + stanceChip(S.stanceOf(p.start)) + '</div><p>' + esc(p.note) + '</p></div>';
+    })).join('');
+    var tl = D.phases.map(function (p) { return '<li><span>' + esc(p.months) + '</span><span><b>' + esc(p.name) + '.</b> ' + esc(p.live) + '</span></li>'; }).join('') +
+      '<li><span>Month 18</span><span><b>The test.</b> Six months after the program office closes.</span></li>';
+    var started = g && (g.stage !== 'plan' || g.phase > 1);
+    var cta = started
+      ? '<button class="btn btn-primary" data-action="resume">Back to the simulation</button>'
+      : '<button class="btn btn-primary" data-action="begin">Start Phase 1: Prepare</button>';
+    var startConds = {};
+    D.conditions.forEach(function (c) { startConds[c.id] = c.start; });
+    return '<main class="wrap screen">' +
+      '<div class="case-grid">' +
+        '<div class="stack-lg">' +
+          '<div class="stack"><p class="eyebrow">The case</p><h1 class="title" tabindex="-1">' + esc(C.agency) + '</h1><p class="muted">A fictional agency, built from patterns you may recognize.</p></div>' +
+          '<div class="case-block"><h2>Your role</h2><p class="read">' + esc(C.role) + '</p></div>' +
+          '<div class="case-block"><h2>The agency</h2><p class="read">' + esc(C.agencyText) + '</p></div>' +
+          '<div class="case-block"><h2>The change</h2><p class="read">' + esc(C.change) + '</p><p class="gap-line">' + esc(C.gap) + '</p></div>' +
+          '<div class="case-block"><h2>Why now</h2><p class="read">' + esc(C.whyNow) + '</p></div>' +
+          '<div class="case-block"><h2>What makes it hard</h2><ul class="hard">' + C.hard.map(function (h) { return '<li><b>' + esc(h.label) + '.</b> ' + esc(h.text) + '</li>'; }).join('') + '</ul></div>' +
+        '</div>' +
+        '<aside class="case-side">' +
+          '<div class="case-block"><h2>Where the Six Conditions start</h2>' + healthRows(startConds, { notes: true }) + '</div>' +
+          '<div class="case-block"><h2>Your resources</h2><p class="read">' + D.budget + ' change credits for the year: the money, staff time, and leadership attention you can direct. Credits you don\'t spend carry forward.</p></div>' +
+          '<div class="case-block"><h2>Timeline</h2><ol class="timeline">' + tl + '</ol></div>' +
+          '<div class="callout accent"><h3>What success means</h3><p>' + esc(C.success) + '</p></div>' +
+        '</aside>' +
+      '</div>' +
+      '<section class="stack-lg"><div class="section-head"><h2>The people</h2><p>Where each group starts on the influence and resistance map. Their stance moves with what you do.</p></div><div class="people">' + people + '</div></section>' +
+      '<p class="muted small">' + esc(C.privateNote) + '</p>' +
+      '<div class="actions">' + cta + '</div>' +
+    '</main>';
+  }
+
+  /* ---------- plan ---------- */
+
+  function leverCard(l, n) {
+    var lv = ui.draft[l.id] || 0, av = S.availability(l, n);
+    var tags = builds(l).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+    return '<article class="lever' + (lv ? ' on' : ' off-now') + '" id="card-' + l.id + '">' +
+      '<div class="lever-top"><h3>' + esc(l.name) + '</h3><div class="lever-cost"><span class="cn" id="cost-' + l.id + '">' + (l.cost * lv) + '</span><span class="cu" id="unit-' + l.id + '">' + unitText(l, lv) + '</span></div></div>' +
+      '<p class="lever-short">' + esc(l.short) + '</p>' +
+      '<div class="lever-meta"><span>Builds</span>' + tags + '<span class="sep"></span><span>Time demand: ' + timeDemand(l) + '</span></div>' +
+      (l.extra ? '<p class="lever-short">' + esc(l.extra) + '</p>' : '') +
+      '<div class="slider"><input type="range" min="0" max="3" step="1" value="' + lv + '" data-lever="' + l.id + '" id="sl-' + l.id + '" class="' + (lv ? '' : 'zero') + '" style="--fill:' + (lv / 3 * 100) + '%" aria-label="' + esc(l.name) + ' level" aria-valuetext="' + esc(D.levelNames[lv] + ': ' + l.levels[lv]) + '">' +
+      '<div class="ticks" aria-hidden="true">' + D.levelNames.map(function (nm, i) { return '<button type="button" tabindex="-1" data-set="' + i + '" data-for="' + l.id + '" class="' + (i === lv ? 'sel' : '') + '">' + nm + '</button>'; }).join('') + '</div></div>' +
+      '<p class="lever-level" id="desc-' + l.id + '"><b>' + D.levelNames[lv] + '.</b> ' + esc(l.levels[lv]) + '</p>' +
+      (av.note ? '<p class="lever-note">' + esc(av.note) + '</p>' : '') +
+    '</article>';
+  }
+
+  function creditsWord(n) { return n === 1 ? 'credit' : 'credits'; }
+  function unitText(l, lv) { return creditsWord(l.cost * lv) + ' · ' + l.cost + ' per level'; }
+
+  function updateLever(id) {
+    var l = S.LEV[id], lv = ui.draft[id] || 0;
+    var card = document.getElementById('card-' + id);
+    if (!card) return;
+    card.className = 'lever' + (lv ? ' on' : ' off-now');
+    document.getElementById('cost-' + id).textContent = l.cost * lv;
+    document.getElementById('unit-' + id).textContent = unitText(l, lv);
+    document.getElementById('desc-' + id).innerHTML = '<b>' + D.levelNames[lv] + '.</b> ' + esc(l.levels[lv]);
+    var sl = document.getElementById('sl-' + id);
+    sl.value = lv;
+    sl.className = lv ? '' : 'zero';
+    sl.style.setProperty('--fill', (lv / 3 * 100) + '%');
+    sl.setAttribute('aria-valuetext', D.levelNames[lv] + ': ' + l.levels[lv]);
+    var ticks = card.querySelectorAll('.ticks button');
+    for (var i = 0; i < ticks.length; i++) ticks[i].className = i === lv ? 'sel' : '';
+  }
+
+  function commitInner() {
+    var g = ui.game, n = g.phase;
+    var plan = S.cleanPlan(ui.draft, n), cost = S.planCost(plan), left = g.credits - cost;
+    var li = S.loadInfo(g.cond.adapt, plan), count = Object.keys(plan).length;
+    var after = n < 4
+      ? 'After this phase you\'ll have <b>' + left + ' credits</b> for ' + plural(4 - n, 'more phase', 'more phases') + '.'
+      : 'You\'ll finish with <b>' + left + ' credits</b> unspent.';
+    var sum = '<p class="commit-sum">This phase: <b>' + plural(count, 'activity', 'activities') + '</b>, <b>' + cost + ' credits</b>, workforce load <b>' + li.label + '</b>. ' + after + '</p>';
+    if (li.extra > 0) sum += '<p class="commit-sum">You\'re running ' + count + ' activities at once. Past ' + D.model.focusLimit + ', the message starts to blur.</p>';
+    var btns;
+    if (left < 0) {
+      btns = '<p class="err">You\'re ' + (-left) + ' credits over budget. Dial something down before you commit.</p>';
+    } else if (ui.confirm) {
+      btns = '<p class="commit-sum"><b>Lock in ' + esc(phase(n).name) + '?</b> Once it\'s committed, you can\'t change it.' + (count === 0 ? ' You haven\'t chosen any activities for this phase.' : '') + '</p>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="confirm-commit">Lock it in</button><button class="btn" data-action="cancel-commit">Keep editing</button></div>';
+    } else {
+      btns = '<div class="actions"><button class="btn btn-primary" data-action="commit">Commit ' + esc(phase(n).name) + '</button></div>';
+    }
+    return '<h2>Ready to commit?</h2>' + sum + btns;
+  }
+
+  function updateStatus() {
+    var st = document.getElementById('status');
+    if (st) st.innerHTML = statusInner();
+    var cm = document.getElementById('commit');
+    if (cm) cm.innerHTML = commitInner();
+  }
+
+  function standing(g) {
+    var n = g.phase, last = g.history[g.history.length - 1];
+    var mini = D.conditions.map(function (c) {
+      return '<div class="mini-cond"><b>' + esc(c.name) + '</b>' + healthChip(g.cond[c.id]) + '</div>';
+    }).join('');
+    var metrics = '';
+    if (n >= 2 && last.coverage > 0) {
+      var see = measured(g, n - 1);
+      metrics = '<p>Month ' + last.month + ': ' + pct(last.coverage) + '% deployed · active use ' + (see ? pct(last.used) + '%' : 'not measured') +
+        ' · meaningful use ' + (see ? pct(last.val) + '%' : 'not measured') + ' · logins ' + pct(last.logins) + '%</p>';
+    }
+    return '<section class="standing"><div class="standing-top"><h2>Where things stand</h2>' + metrics + '</div><div class="mini-conds">' + mini + '</div></section>';
+  }
+
+  function roadmap(g) {
+    if (g.phase < 2) return '';
+    return '<details class="roadmap"><summary>Your plan so far</summary>' + heatTable(g, g.phase - 1) + '</details>';
+  }
+
+  function planScreen() {
+    var g = ui.game, n = g.phase, ph = phase(n);
+    var notice = '';
+    if (g.notice && g.notice.id === 'cr' && n === 4) {
+      notice = '<section class="notice"><p class="eyebrow">Event</p><h2>' + esc(D.events.cr.title) + '</h2><p>' + esc(D.events.cr.text) + '</p>' +
+        '<p><b>' + g.notice.frozen + ' credits were frozen.</b> The recertification also costs people time, so Adaptive Capacity took a hit.</p></section>';
+    }
+    var moves = D.moves.map(function (m) {
+      var open = D.levers.filter(function (l) { return l.move === m.id && S.available(l, n); });
+      var closed = D.levers.filter(function (l) { return l.move === m.id && !S.available(l, n); });
+      return '<section class="move" aria-labelledby="mv-' + m.id + '"><div class="move-head"><h2 id="mv-' + m.id + '">' + esc(m.name) + '</h2><p>' + esc(m.purpose) + '</p></div>' +
+        (open.length ? '<div class="lever-grid">' + open.map(function (l) { return leverCard(l, n); }).join('') + '</div>' : '<p class="closed">Nothing in this move is available in this phase.</p>') +
+        (closed.length ? '<p class="closed">Not available now: ' + closed.map(function (l) { return esc(l.name) + ' <em>(' + esc(S.availability(l, n).note) + ')</em>'; }).join(' · ') + '</p>' : '') +
+      '</section>';
+    }).join('');
+    return statusBar() + '<main class="wrap screen">' +
+      '<div class="phase-head"><p class="eyebrow">Phase ' + n + ' of 4 · ' + esc(ph.months) + '</p><h1 class="title" tabindex="-1">' + esc(ph.name) + '</h1>' +
+      '<p class="lead">' + esc(ph.intro) + '</p><p class="live"><b>Live now:</b> ' + esc(ph.live) + '</p></div>' +
+      notice + standing(g) + roadmap(g) + moves +
+      '<section class="commit" id="commit">' + commitInner() + '</section>' +
+    '</main>';
+  }
+
+  /* ---------- pulse ---------- */
+
+  function sentiment(c) {
+    var v = 0.6 * c.conv + 0.2 * c.adapt + 0.2 * c.endo;
+    return v < 40 ? 'Mostly negative' : v < 55 ? 'Mixed' : v < 70 ? 'Leaning positive' : 'Positive';
+  }
+
+  function tile(label, value, sub, cls, tag) {
+    return '<div class="tile ' + (cls || '') + '"><div class="tl"><span>' + label + '</span>' + (tag ? '<span class="watch-tag">' + tag + '</span>' : '') + '</div><div class="tv num">' + value + '</div><div class="ts">' + sub + '</div></div>';
+  }
+
+  function eventCard(p) {
+    var ev = D.events[p.id], g = ui.game;
+    if (p.auto) {
+      return '<section class="event done"><p class="eyebrow">Event</p><h2>' + esc(ev.resolvedTitle) + '</h2><p class="event-text">' + esc(ev.resolvedText) + '</p></section>';
+    }
+    var chosen = ui.choices[p.id];
+    var others = 0;
+    g.pending.forEach(function (q) {
+      if (q.id !== p.id && !q.resolved && ui.choices[q.id]) {
+        var o = D.events[q.id].options.filter(function (x) { return x.id === ui.choices[q.id]; })[0];
+        if (o) others += o.cost;
+      }
+    });
+    var opts = ev.options.map(function (o) {
+      var afford = o.cost <= g.credits - others;
+      var sel = chosen === o.id;
+      return '<label class="option' + (sel ? ' sel' : '') + (afford ? '' : ' disabled') + '">' +
+        '<input type="radio" name="ev-' + p.id + '" value="' + o.id + '"' + (sel ? ' checked' : '') + (afford ? '' : ' disabled') + ' data-event="' + p.id + '">' +
+        '<span class="oc">' + (o.cost ? o.cost + ' ' + creditsWord(o.cost) : 'No cost') + (afford ? '' : ' · not enough credits') + '</span>' +
+        '<span class="ol">' + esc(o.label) + '</span><span class="od">' + esc(o.detail) + '</span></label>';
+    }).join('');
+    return '<section class="event" id="ev-' + p.id + '"><p class="eyebrow">Event</p><h2>' + esc(ev.title) + '</h2><p class="event-text">' + esc(ev.text) + '</p>' +
+      '<fieldset style="border:0;margin:0;padding:0"><legend class="muted small" style="margin-bottom:8px">How do you respond?</legend><div class="options">' + opts + '</div></fieldset></section>';
+  }
+
+  function pulseScreen() {
+    var g = ui.game, n = g.phase, ph = phase(n);
+    var snap = g.history[g.history.length - 1], prev = g.history[g.history.length - 2];
+    var see = snap.visible && snap.visible.meaningful;
+    var tiles = tile('Deployed', pct(snap.coverage) + '%', 'of caseworkers have the tool');
+    tiles += see ? tile('Active use', pct(snap.used) + '%', 'used it on a case in the last two weeks')
+      : tile('Active use', 'Not measured', 'Fund the early-warning dashboard to see it', 'fogged');
+    tiles += see ? tile('Meaningful use', pct(snap.val) + '%', 'drafts used on real cases and approved')
+      : tile('Meaningful use', 'Not measured', 'Fund the early-warning dashboard to see it', 'fogged');
+    tiles += tile('Logins', pct(snap.logins) + '%', 'logged in this month', 'watch', 'Watchlist');
+    tiles += tile('Course completions', pct(snap.training) + '%', 'finished assigned training', 'watch', 'Watchlist');
+    var sentTile = (snap.visible && snap.visible.sentiment) ? tile('Sentiment pulse', '<span style="font-size:20px">' + sentiment(snap.cond) + '</span>', 'from this phase\'s pulse surveys') : '';
+    tiles += sentTile;
+    var fogNote = see ? '' : '<p class="muted small">You can see logins and course completions. You can\'t yet see whether drafts are being used on real cases.</p>';
+    var adoption = snap.coverage > 0
+      ? '<section class="stack"><h2>Adoption</h2><div class="tiles">' + tiles + '</div>' + fogNote + '</section>'
+      : '<section class="stack"><h2>Adoption</h2><p class="muted">Nothing is live yet. The two pilot centers switch on in month 3.</p>' + (sentTile ? '<div class="tiles">' + sentTile + '</div>' : '') + '</section>';
+
+    var people = D.personas.map(function (p) {
+      var now = snap.personas[p.id], was = prev.personas[p.id];
+      var d = now.score - was.score;
+      var mv = d >= 0.25 ? '<span class="delta up">↑</span>' : d <= -0.25 ? '<span class="delta down">↓</span>' : '<span class="delta flat"></span>';
+      return '<div class="persona-row"><div><div class="pn">' + esc(p.name) + '</div><div class="pq">' + esc(p.quadrant) + '</div></div><div class="persona-right">' + mv + stanceChip(now) + '</div></div>';
+    }).join('');
+
+    var voices = (g.voices[n] || []).map(function (v) {
+      return '<figure class="voice' + (v.kind === 'pos' ? ' pos' : '') + '"><p>“' + esc(v.text) + '”</p><cite>' + esc(v.who) + '</cite></figure>';
+    }).join('');
+    var sigs = (g.signals[n] || []).map(function (s) {
+      return '<li>' + (s.tone === 'good' ? ICON.good : ICON.warn) + '<span>' + esc(s.text) + '</span></li>';
+    }).join('');
+
+    var events = g.pending.map(eventCard).join('');
+    var nextLabel = n < 4 ? 'Plan ' + phase(n + 1).name : 'Fast-forward to month 18';
+    return statusBar() + '<main class="wrap screen">' +
+      '<div class="phase-head"><p class="eyebrow">Pulse check · Month ' + snap.month + '</p><h1 class="title" tabindex="-1">After ' + esc(ph.name.toLowerCase()) + '</h1></div>' +
+      adoption +
+      '<div class="two-col">' +
+        '<section class="stack"><h2>The Six Conditions</h2>' + healthRows(snap.cond, { prev: prev.cond }) + '<p class="muted small">The thin mark shows where each condition stood at the start of this phase. The red line marks at risk.</p></section>' +
+        '<section class="stack"><h2>The people</h2><div class="persona-list">' + people + '</div></section>' +
+      '</div>' +
+      (voices ? '<section class="stack"><h2>What people are saying</h2><div class="voices">' + voices + '</div>' +
+        (snap.visible && snap.visible.sentiment ? '' : '<p class="muted small">Listening sessions and pulse surveys would let you hear more voices.</p>') + '</section>' : '') +
+      (sigs ? '<section class="stack"><h2>What you\'re noticing</h2><ul class="signals">' + sigs + '</ul></section>' : '') +
+      events +
+      '<div class="stack"><p class="err" id="continue-err"></p><div class="actions"><button class="btn btn-primary" data-action="continue">' + esc(nextLabel) + '</button></div></div>' +
+    '</main>';
+  }
+
+  /* ---------- month 18 ---------- */
+
+  var M18_TEXT = {
+    stuck: 'Nobody runs a campaign for the assistant anymore, and it doesn\'t need one. It has become part of how drafting gets done, and it survived the people who launched it moving on.',
+    fragile: 'Most caseworkers still use it, but the support underneath is thin. The next reorganization or budget squeeze could undo it.',
+    slipped: 'The launch worked. Then the program office closed, the reminders stopped, and the old way crept back in. Six months on, fewer people use the assistant than at its peak.',
+    close: 'Real progress, but not enough to call it done. Some centers use the assistant well. Others never moved past trying it.',
+    stalled: 'The assistant is live in every center and the login report looks fine. But for most caseworkers the work hasn\'t changed. Drafts are still written the old way.'
+  };
+
+  function m18Screen() {
+    var g = ui.game, a = S.analyze(g);
+    var H = g.history, m12 = H.filter(function (h) { return h.month === 12; })[0], m18 = H[H.length - 1];
+    function mt(label, from, to) {
+      var d = pct(to) - pct(from);
+      return '<div class="m18-tile"><span class="muted small">' + label + '</span><span class="from">Month 12: ' + pct(from) + '%</span><span class="to num">' + pct(to) + '%</span>' +
+        '<span class="chg ' + (d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat') + '" style="text-align:left">' + (d > 0 ? '+' : '') + d + ' points since month 12</span></div>';
+    }
+    return '<main class="wrap screen">' +
+      '<div class="phase-head"><p class="eyebrow">Month 18</p><h1 class="title" tabindex="-1">The program office closed six months ago.</h1>' +
+      '<p class="lead">' + esc(M18_TEXT[a.tier]) + '</p></div>' +
+      '<section class="stack"><h2>Six months later</h2><div class="m18-grid">' +
+        mt('Meaningful use', m12.val, m18.val) + mt('Active use', m12.used, m18.used) + mt('Logins', m12.logins, m18.logins) +
+      '</div></section>' +
+      '<section class="stack"><h2>The Six Conditions without the program office</h2>' + healthRows(m18.cond, { prev: m12.cond }) +
+      '<p class="muted small">The thin mark shows month 12. What you built into workflows, standards, and manager routines is what held.</p></section>' +
+      '<div class="actions"><button class="btn btn-primary" data-action="to-debrief">See your debrief</button></div>' +
+    '</main>';
+  }
+
+  /* ---------- debrief ---------- */
+
+  function heatTable(g, upTo) {
+    var rows = D.levers.filter(function (l) { return S.cum(g, l.id, upTo) > 0; });
+    var head = '<tr><th>Lever</th>' + D.phases.slice(0, upTo).map(function (p) { return '<th>' + esc(p.name) + '</th>'; }).join('') + '<th style="text-align:right">Credits</th></tr>';
+    var body = rows.map(function (l) {
+      var tot = 0;
+      var cells = D.phases.slice(0, upTo).map(function (p) {
+        var lv = S.lvl(g, p.n, l.id);
+        tot += lv * l.cost;
+        return '<td><span class="lvl lvl-' + lv + '" title="' + esc(D.levelNames[lv]) + '">' + (lv ? D.levelNames[lv][0] : '') + '</span></td>';
+      }).join('');
+      return '<tr><td class="lname">' + esc(l.name) + '</td>' + cells + '<td class="tot">' + tot + '</td></tr>';
+    }).join('');
+    var foot = '<tr><th>Total</th>' + D.phases.slice(0, upTo).map(function (p) { return '<td>' + (g.spend[p.n] || 0) + '</td>'; }).join('') +
+      '<td>' + D.phases.slice(0, upTo).reduce(function (t, p) { return t + (g.spend[p.n] || 0); }, 0) + '</td></tr>';
+    var legend = '<div class="heat-legend"><span><i class="lvl-1"></i>Light</span><span><i class="lvl-2"></i>Moderate</span><span><i class="lvl-3"></i>Intensive</span></div>';
+    if (!rows.length) return '<p class="muted">No activities yet.</p>';
+    var cols = '<colgroup><col class="c-lever">' + D.phases.slice(0, upTo).map(function () { return '<col>'; }).join('') + '<col class="c-tot"></colgroup>';
+    return '<div class="table-scroll"><table class="heat">' + cols + '<thead>' + head + '</thead><tbody>' + body + '</tbody><tfoot>' + foot + '</tfoot></table></div>' + legend;
+  }
+
+  function eventRecap(g) {
+    var out = [];
+    ['union', 'headline', 'win', 'sponsor'].forEach(function (id) {
+      var e = g.events[id];
+      if (!e) return;
+      var ev = D.events[id];
+      if (e.option === 'auto') { out.push('<li>' + esc(ev.resolvedTitle) + '<span>Because you engaged the union in Prepare</span></li>'); return; }
+      var o = ev.options.filter(function (x) { return x.id === e.option; })[0];
+      out.push('<li>' + esc(ev.title) + '<span>' + esc(o.label) + (o.cost ? ' (' + o.cost + ' ' + creditsWord(o.cost) + ')' : '') + '</span></li>');
+    });
+    if (g.frozen) out.push('<li>' + esc(D.events.cr.title) + '<span>' + g.frozen + ' credits frozen</span></li>');
+    return out.join('');
+  }
+
+  function barRows(items, max) {
+    return '<div class="barlist">' + items.map(function (it) {
+      var w = max ? Math.round(it.value / max * 100) : 0;
+      return '<div class="barrow"><span>' + esc(it.label) + '</span><div class="track" aria-hidden="true"><span class="fill" style="width:' + Math.max(it.value ? 2 : 0, w) + '%"></span></div><span class="bv">' + it.text + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function debriefScreen() {
+    var g = ui.game, a = S.analyze(g);
+    lastAnalysis = a;
+    var tierCls = 'tier tier-' + a.tier;
+    var condRows = D.conditions.map(function (c) {
+      var v = a.cond18[c.id], st = a.condStart[c.id], weak = c.id === a.weakest;
+      return '<div class="health-row"><div><div class="hn">' + esc(c.name) + (weak ? ' <span class="tag">Weakest</span>' : '') + '</div><div class="hq">' + esc(c.question) + '</div></div>' +
+        '<div class="track" aria-hidden="true"><span class="riskline" style="left:' + D.riskLine + '%"></span><span class="fill" style="width:' + Math.max(1, Math.round(v)) + '%"></span><span class="ghost" style="left:' + Math.round(st) + '%"></span></div>' +
+        '<div class="health-right"><span class="delta flat num" style="color:var(--ink-2)">' + Math.round(v) + '</span>' + healthChip(v) + '</div></div>';
+    }).join('');
+
+    var moveItems = D.moves.map(function (m) { return { label: m.name, value: a.byMove[m.id], text: a.byMove[m.id] + ' · ' + Math.round(a.share[m.id] * 100) + '%' }; });
+    var maxMove = Math.max.apply(null, moveItems.map(function (x) { return x.value; }).concat([1]));
+    var adTotal = a.adkar.A + a.adkar.D + a.adkar.K + a.adkar.B + a.adkar.R;
+    var adItems = ['A', 'D', 'K', 'B', 'R'].map(function (k) { return { label: D.adkar[k], value: a.adkar[k], text: a.adkar[k] + ' · ' + (adTotal ? Math.round(a.adkar[k] / adTotal * 100) : 0) + '%' }; });
+    var maxAd = Math.max.apply(null, adItems.map(function (x) { return x.value; }).concat([1]));
+    var adSentence = a.akShare >= 0.55
+      ? 'Like most AI programs, you spent most on Awareness and Knowledge (' + Math.round(a.akShare * 100) + '%) and less on Desire and Reinforcement (' + Math.round(a.drShare * 100) + '%), the two stages that decide whether AI sticks.'
+      : a.drShare >= 0.45
+        ? 'You put ' + Math.round(a.drShare * 100) + '% of your budget into Desire and Reinforcement, the two stages most AI programs starve.'
+        : 'Your budget was spread across the ADKAR stages, with ' + Math.round(a.akShare * 100) + '% on Awareness and Knowledge and ' + Math.round(a.drShare * 100) + '% on Desire and Reinforcement.';
+
+    var archRead = a.archetype.read;
+    if (a.archetype.key === 'mixed') archRead = 'Your plan touched several moves, but ' + a.weakestName + ' never got strong enough to carry adoption. Adoption follows the weakest condition.';
+    else if (a.success) archRead += ' It carried all six conditions past month 18.';
+
+    var patterns = a.patterns.map(function (p) {
+      return '<li class="' + (p.hit ? 'hit' : 'ok') + '">' + (p.hit ? ICON.warn : ICON.good) + '<div><div class="pt">' + esc(p.name) + '</div><div class="pd">' + esc(p.desc) + '</div><div class="pw">' + (p.hit ? esc(p.where) : 'Avoided') + '</div></div></li>';
+    }).join('');
+
+    var worked = a.worked.length ? a.worked.map(function (w) {
+      return '<li>' + esc(w.name) + '<span>Most of its effect went to ' + esc(w.topName) + ' · ' + w.credits + ' credits</span></li>';
+    }).join('') : '<li>Nothing stood out.<span>Try a plan with fewer, deeper activities.</span></li>';
+    var leaks = a.leaks.length ? a.leaks.map(function (l) {
+      var where = l.phases.map(function (n) { return phase(n).name; }).join(' and ');
+      var why = l.kind === 'mistimed' ? 'Spent in a phase where it lands poorly: ' + where : 'Lost effect to overload, message fatigue, or sequencing: ' + where;
+      return '<li>' + esc(l.name) + ' · about ' + Math.round(l.credits) + ' credits<span>' + esc(why) + '</span></li>';
+    }).join('') : '<li>Nothing significant.<span>Your credits landed where they could work.</span></li>';
+
+    var learn = a.learn.map(function (l) {
+      var why = l.key === 'patterns' ? 'Because ' + a.patternHits + ' failure patterns showed up' : l.key === 'adkar' ? 'Because of where your budget went' : 'Because ' + l.cond + ' was your ' + (l.key === a.weakest ? 'weakest' : 'second-weakest') + ' condition';
+      return '<div class="learn-card"><span class="why">' + esc(why) + '</span><h3>' + esc(l.item.session) + '</h3><p>' + esc(l.item.focus) + '</p>' +
+        '<p class="tool">Toolkit: <b>' + esc(l.item.tool) + '</b></p><p class="monday"><b>This week:</b> ' + esc(l.item.monday) + '</p></div>';
+    }).join('');
+
+    var runs = ui.attempts.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Run</th><th class="l">Outcome</th><th class="l">Pattern</th><th>Meaningful use</th><th>Credits used</th></tr></thead><tbody>' +
+      ui.attempts.map(function (r, i) {
+        return '<tr' + (i === ui.attempts.length - 1 ? ' style="font-weight:650"' : '') + '><td>' + (i + 1) + '</td><td class="l">' + esc(r.title) + '</td><td class="l">' + esc(r.archetype) + '</td><td>' + r.val18 + '%</td><td>' + r.spent + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '';
+
+    var seriesTable = '<div class="table-scroll" id="adopt-table" hidden><table class="data"><thead><tr><th>Month</th><th>Deployed</th><th>Logins</th><th>Active use</th><th>Meaningful use</th></tr></thead><tbody>' +
+      a.series.map(function (p) { return '<tr><td>' + p.month + '</td><td>' + pct(p.coverage) + '%</td><td>' + pct(p.logins) + '%</td><td>' + pct(p.used) + '%</td><td>' + pct(p.val) + '%</td></tr>'; }).join('') + '</tbody></table></div>';
+    var neverMeasured = S.cum(g, 'dashboard', 4) === 0;
+
+    var r = ui.reflection;
+    return '<main class="wrap screen">' +
+      '<section class="outcome"><div class="outcome-main"><p class="eyebrow">Debrief</p><span class="' + tierCls + '">' + esc(a.title) + '</span>' +
+        '<h1 class="title" tabindex="-1">' + esc(a.archetype.name) + '</h1>' +
+        '<div class="hero-num"><b class="num">' + a.val18 + '%</b><span>meaningful use at month 18. The goal was ' + D.successRate + '%.</span></div>' +
+        '<p class="lead">' + esc(a.summary) + '</p></div>' +
+        '<div class="next-move"><p class="eyebrow">Your next move</p><p class="nm">' + esc(a.nextMove) + '</p><span class="muted small">' + esc(a.weakestName) + ' was your weakest condition at month 18.</span></div>' +
+      '</section>' +
+
+      '<section class="stack"><div class="section-head"><h2>Adoption over 18 months</h2><p>Meaningful use is what counts. Logins are what most dashboards show.</p></div>' +
+        '<div class="chart-legend"><span><i style="background:var(--s1)"></i>Meaningful use</span><span><i style="background:var(--s2)"></i>Active use</span><span><i style="background:var(--s3)"></i>Logins</span></div>' +
+        '<div class="chart-box"><div class="chart" id="adopt-chart" role="img" aria-label="Line chart of meaningful use, active use, and logins from month 0 to month 18."></div></div>' +
+        seriesTable +
+        '<div class="actions"><button class="btn btn-quiet btn-sm no-print" data-action="toggle-table">Show as a table</button></div>' +
+        (neverMeasured ? '<p class="muted small">You never funded the early-warning dashboard, so during play you saw only logins and course completions. This is what was happening underneath.</p>' : '') +
+      '</section>' +
+
+      '<section class="stack"><div class="section-head"><h2>The Six Conditions at month 18</h2><p>Adoption follows the weakest condition. The thin mark shows where each one started. The red line marks at risk.</p></div>' +
+        '<div class="health-list">' + condRows + '</div></section>' +
+
+      '<section class="stack-lg"><div class="section-head"><h2>Your plan</h2><p>Every lever you used, by phase.</p></div>' + heatTable(g, 4) +
+        '<div class="cols-2"><div class="stack"><h3>Events</h3><ul class="list-plain">' + eventRecap(g) + '</ul></div>' +
+        '<div class="stack"><h3>Credits</h3><ul class="list-plain">' +
+          '<li>' + a.credits.levers + ' credits on activities<span>Across four phases</span></li>' +
+          '<li>' + a.credits.events + ' credits on event responses<span>' + (a.credits.frozen ? a.credits.frozen + ' more were frozen by the continuing resolution' : 'No credits frozen') + '</span></li>' +
+          '<li>' + a.credits.left + ' credits unspent<span>' + (a.credits.left >= 12 ? 'Room to spare' : 'You used nearly everything') + '</span></li>' +
+        '</ul></div></div></section>' +
+
+      '<section class="cols-2">' +
+        '<div class="stack"><div class="section-head"><h2>Spend by move</h2><p>Credits and share of your activity budget.</p></div>' + barRows(moveItems, maxMove) + '</div>' +
+        '<div class="stack"><div class="section-head"><h2>Spend by ADKAR stage</h2><p>' + esc(adSentence) + '</p></div>' + barRows(adItems, maxAd) + '</div>' +
+      '</section>' +
+
+      '<section class="stack"><div class="section-head"><h2>Your pattern: ' + esc(a.archetype.name) + '</h2><p>' + esc(archRead) + '</p></div></section>' +
+
+      '<section class="stack"><div class="section-head"><h2>How AI adoption usually dies</h2><p>The six failure patterns, plus change on a full plate. Here\'s which ones showed up in your run.</p></div><ul class="patterns">' + patterns + '</ul></section>' +
+
+      '<section class="cols-2">' +
+        '<div class="stack"><h2>What worked</h2><p class="muted small">Your best value per credit.</p><ul class="list-plain">' + worked + '</ul></div>' +
+        '<div class="stack"><h2>Where credits leaked</h2><p class="muted small">Credits that bought less than they could have.</p><ul class="list-plain">' + leaks + '</ul></div>' +
+      '</section>' +
+
+      '<section class="stack"><div class="section-head"><h2>What to learn next</h2><p>Chosen from your weakest conditions and the patterns in your run.</p></div><div class="learn">' + learn + '</div></section>' +
+
+      '<section class="stack-lg"><div class="section-head"><h2>Your bring-back brief</h2><p>Three answers for your own initiative. They\'re saved in this browser and included when you copy your summary.</p></div>' +
+        '<div class="brief">' +
+          '<div class="field"><label for="rf-fix">The condition I\'d strengthen first in my own initiative</label><textarea id="rf-fix" data-field="fix" placeholder="Endorsement. Our section chiefs heard about it at the all-hands.">' + esc(r.fix) + '</textarea></div>' +
+          '<div class="field"><label for="rf-pattern">The failure pattern I\'ve seen happen for real</label><textarea id="rf-pattern" data-field="pattern" placeholder="No reinforcement. Use dropped off after the launch month and nobody noticed.">' + esc(r.pattern) + '</textarea></div>' +
+          '<div class="field"><label for="rf-move">One thing I\'ll do in the next 7 days</label><textarea id="rf-move" data-field="move" placeholder="List the 15 managers whose teams decide this, by name.">' + esc(r.move) + '</textarea></div>' +
+        '</div>' +
+        '<div class="actions no-print"><button class="btn btn-primary" data-action="copy">Copy my summary</button>' +
+          (CAN_PRINT ? '<button class="btn" data-action="print">Print or save as PDF</button>' : '') +
+          '<span class="muted small" id="copy-msg" role="status"></span></div>' +
+        '<div id="copy-fallback"></div>' +
+      '</section>' +
+
+      '<section class="stack-lg no-print"><div class="section-head"><h2>Try another path</h2><p>There\'s more than one way to make it stick. See if you can win with a different approach, or with fewer credits.</p></div>' + runs +
+        '<div class="actions"><button class="btn btn-primary" data-action="replay">Try a different path</button><button class="btn" data-action="home">Back to the start</button></div></section>' +
+
+      '<details class="about"><summary>How the scoring works</summary><div class="read"><ul>' +
+        '<li>Each lever strengthens one or two of the Six Conditions. The tags on each card show which.</li>' +
+        '<li>Each step up a slider costs the same, but adds less than the step before. Light is the best value per credit. Intensive buys depth at a premium.</li>' +
+        '<li>Timing matters. Some levers land well in one phase and poorly in another.</li>' +
+        '<li>Some combinations help each other and some backfire: managers briefed before the town hall, labs paired with floor support, standards changed before people can use the tool.</li>' +
+        '<li>Every activity takes people\'s time. Past what they can absorb, everything lands softer. Clearing the plate buys capacity back.</li>' +
+        '<li>Conditions fade unless you refresh them, and fade faster once the program office closes. Changes built into the workflow, standards, and manager routines slow the fade.</li>' +
+        '<li>Adoption follows the weakest condition. Meaningful use counts drafts used on real cases. Logins don\'t count.</li>' +
+        '<li>There\'s no luck involved. The same plan always gets the same result, so runs can be compared.</li>' +
+      '</ul></div></details>' +
+    '</main>';
+  }
+
+  /* ---------- adoption chart ---------- */
+
+  function drawAdoption() {
+    var box = document.getElementById('adopt-chart');
+    if (!box || !lastAnalysis) return;
+    var pts = lastAnalysis.series;
+    var w = Math.max(300, Math.floor(box.clientWidth)), narrow = w < 560;
+    var h = narrow ? 250 : 300;
+    var m = { l: 42, r: narrow ? 12 : 128, t: narrow ? 16 : 32, b: 34 };
+    var iw = w - m.l - m.r, ih = h - m.t - m.b;
+    var X = function (mo) { return m.l + mo / 18 * iw; };
+    var Y = function (v) { return m.t + (1 - v) * ih; };
+    var css = getComputedStyle(document.documentElement);
+    var col = function (v) { return css.getPropertyValue(v).trim(); };
+    var s = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">';
+    s += '<rect x="' + X(12) + '" y="' + m.t + '" width="' + (X(18) - X(12)) + '" height="' + ih + '" fill="' + col('--wash') + '"/>';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+      s += '<line x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + col('--line') + '" stroke-width="1"/>';
+      s += '<text x="' + (m.l - 8) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="11" fill="' + col('--ink-3') + '" style="font-variant-numeric:tabular-nums">' + Math.round(v * 100) + '%</text>';
+    });
+    [2, 5, 9, 12].forEach(function (mo) {
+      s += '<line x1="' + X(mo) + '" x2="' + X(mo) + '" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="' + col('--line') + '" stroke-width="1"/>';
+    });
+    if (!narrow) {
+      [[0, 2, 'Prepare'], [2, 5, 'Pilot'], [5, 9, 'Scale'], [9, 12, 'Sustain'], [12, 18, 'Program office closed']].forEach(function (b) {
+        s += '<text x="' + ((X(b[0]) + X(b[1])) / 2) + '" y="' + (m.t - 10) + '" text-anchor="middle" font-size="11" fill="' + col('--ink-3') + '">' + b[2] + '</text>';
+      });
+    }
+    pts.forEach(function (p) {
+      s += '<text x="' + X(p.month) + '" y="' + (m.t + ih + 20) + '" text-anchor="middle" font-size="11" fill="' + col('--ink-3') + '" style="font-variant-numeric:tabular-nums">' + (p.month === 0 ? 'Month 0' : p.month) + '</text>';
+    });
+    s += '<line x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + Y(D.successRate / 100) + '" y2="' + Y(D.successRate / 100) + '" stroke="' + col('--ink-3') + '" stroke-width="1"/>';
+    s += '<text x="' + (m.l + 6) + '" y="' + (Y(D.successRate / 100) - 6) + '" font-size="11" font-weight="600" fill="' + col('--ink-2') + '">Goal ' + D.successRate + '%</text>';
+    function path(key) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p.month).toFixed(1) + ' ' + Y(p[key]).toFixed(1); }).join(' '); }
+    s += '<path d="' + path('logins') + '" fill="none" stroke="' + col('--s3') + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path d="' + path('used') + '" fill="none" stroke="' + col('--s2') + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path d="' + path('val') + '" fill="none" stroke="' + col('--s1') + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    pts.forEach(function (p) {
+      s += '<circle cx="' + X(p.month) + '" cy="' + Y(p.val) + '" r="4.5" fill="' + col('--s1') + '" stroke="' + col('--bg') + '" stroke-width="2"/>';
+    });
+    var end = pts[pts.length - 1];
+    if (!narrow) {
+      s += '<text x="' + (X(18) + 10) + '" y="' + (Y(end.val) + 4) + '" font-size="12.5" font-weight="700" fill="' + col('--ink') + '">' + pct(end.val) + '% meaningful</text>';
+    }
+    s += '<line id="xhair" x1="0" x2="0" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="' + col('--ink-3') + '" stroke-width="1" visibility="hidden"/>';
+    s += '<rect id="hit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>';
+    s += '</svg><div class="tip" id="tip" hidden></div>';
+    box.innerHTML = s;
+
+    var hit = box.querySelector('#hit'), xh = box.querySelector('#xhair'), tip = box.querySelector('#tip');
+    function show(evt) {
+      var rect = box.getBoundingClientRect();
+      var px = evt.clientX - rect.left;
+      var best = pts[0];
+      pts.forEach(function (p) { if (Math.abs(X(p.month) - px) < Math.abs(X(best.month) - px)) best = p; });
+      xh.setAttribute('x1', X(best.month));
+      xh.setAttribute('x2', X(best.month));
+      xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = '<b>' + (best.month === 0 ? 'Start' : 'Month ' + best.month) + '</b>' +
+        '<div><span><i style="background:' + col('--s1') + '"></i>Meaningful use</span><span>' + pct(best.val) + '%</span></div>' +
+        '<div><span><i style="background:' + col('--s2') + '"></i>Active use</span><span>' + pct(best.used) + '%</span></div>' +
+        '<div><span><i style="background:' + col('--s3') + '"></i>Logins</span><span>' + pct(best.logins) + '%</span></div>';
+      tip.hidden = false;
+      var left = X(best.month) + 14;
+      if (left + 190 > w) left = X(best.month) - 200;
+      tip.style.left = Math.max(0, left) + 'px';
+      tip.style.top = (m.t + 8) + 'px';
+    }
+    function hide() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('pointermove', show);
+    hit.addEventListener('pointerdown', show);
+    hit.addEventListener('pointerleave', hide);
+  }
+
+  /* ---------- summary for copying ---------- */
+
+  function summaryText() {
+    var g = ui.game, a = lastAnalysis || S.analyze(g), r = ui.reflection, L = [];
+    L.push(D.meta.title + ': my results');
+    L.push('Outcome: ' + a.title + '. ' + a.val18 + '% meaningful use at month 18 (goal ' + D.successRate + '%).');
+    L.push('Pattern: ' + a.archetype.name);
+    L.push('Six Conditions at month 18: ' + S.COND.map(function (id) { return cname(id) + ' ' + S.healthOf(a.cond18[id]).label.toLowerCase(); }).join(', '));
+    L.push('Weakest condition: ' + a.weakestName);
+    var hits = a.patterns.filter(function (p) { return p.hit; }).map(function (p) { return p.name; });
+    L.push('Failure patterns that showed up: ' + (hits.length ? hits.join(', ') : 'none'));
+    L.push('');
+    L.push('My plan');
+    D.phases.forEach(function (p) {
+      var plan = g.plans[p.n] || {};
+      var items = D.levers.filter(function (l) { return plan[l.id]; }).map(function (l) { return l.name + ' (' + D.levelNames[plan[l.id]] + ')'; });
+      L.push('- ' + p.name + ', ' + (g.spend[p.n] || 0) + ' credits: ' + (items.length ? items.join('; ') : 'nothing'));
+    });
+    ['union', 'headline', 'win', 'sponsor'].forEach(function (id) {
+      var e = g.events[id];
+      if (!e) return;
+      var ev = D.events[id];
+      if (e.option === 'auto') { L.push('- Event, ' + ev.title + ': resolved early because the union was engaged in Prepare'); return; }
+      var o = ev.options.filter(function (x) { return x.id === e.option; })[0];
+      L.push('- Event, ' + ev.title + ': ' + o.label);
+    });
+    L.push('');
+    L.push('What to learn next');
+    a.learn.forEach(function (l) { L.push('- ' + l.item.session + '. ' + l.item.focus); });
+    L.push('');
+    L.push('My bring-back brief');
+    L.push('- The condition I\'d strengthen first: ' + (r.fix || '(blank)'));
+    L.push('- The failure pattern I\'ve seen for real: ' + (r.pattern || '(blank)'));
+    L.push('- One thing I\'ll do in the next 7 days: ' + (r.move || '(blank)'));
+    return L.join('\n');
+  }
+
+  /* ---------- flow ---------- */
+
+  function render() {
+    renderTopbar();
+    var html;
+    if (ui.view === 'welcome' || !ui.game) html = welcome();
+    else if (ui.view === 'case') html = caseScreen();
+    else {
+      var st = ui.game.stage;
+      html = st === 'plan' ? planScreen() : st === 'pulse' ? pulseScreen() : st === 'm18' ? m18Screen() : debriefScreen();
+    }
+    app.innerHTML = html;
+    if (ui.view === 'game' && ui.game && ui.game.stage === 'debrief') drawAdoption();
+    save();
+  }
+
+  function go() {
+    render();
+    window.scrollTo(0, 0);
+    var h = app.querySelector('h1');
+    if (h) { try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+  }
+
+  function newRun() {
+    ui.game = S.newGame();
+    ui.game.stage = 'plan';
+    ui.draft = {};
+    ui.choices = {};
+    ui.confirm = false;
+    ui.recorded = false;
+  }
+
+  function setLevel(id, lv) {
+    if (lv > 0) ui.draft[id] = lv; else delete ui.draft[id];
+    ui.confirm = false;
+    updateLever(id);
+    updateStatus();
+    save();
+  }
+
+  var actions = {
+    'read-case': function () {
+      if (!ui.game || ui.game.stage === 'debrief') newRun();
+      ui.view = 'case';
+      ui.resetAsk = false;
+      go();
+    },
+    begin: function () { ui.view = 'game'; go(); },
+    resume: function () { ui.view = 'game'; ui.resetAsk = false; go(); },
+    'ask-reset': function () { ui.resetAsk = true; render(); },
+    'cancel-reset': function () { ui.resetAsk = false; render(); },
+    reset: function () { ui.game = null; ui.draft = {}; ui.choices = {}; ui.resetAsk = false; ui.view = 'welcome'; go(); },
+    home: function () { ui.view = 'welcome'; go(); },
+    'to-commit': function () {
+      var g = ui.game;
+      if (S.planCost(S.cleanPlan(ui.draft, g.phase)) <= g.credits) ui.confirm = true;
+      updateStatus();
+      var c = document.getElementById('commit');
+      if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+    commit: function () { ui.confirm = true; updateStatus(); },
+    'cancel-commit': function () { ui.confirm = false; updateStatus(); },
+    'confirm-commit': function () {
+      try {
+        S.commitPhase(ui.game, ui.draft);
+      } catch (e) {
+        ui.confirm = false;
+        updateStatus();
+        return;
+      }
+      ui.draft = {};
+      ui.choices = {};
+      ui.confirm = false;
+      go();
+    },
+    'continue': function () {
+      var g = ui.game, err = document.getElementById('continue-err');
+      var open = g.pending.filter(function (p) { return !p.resolved; });
+      var missing = open.filter(function (p) { return !ui.choices[p.id]; });
+      if (missing.length) {
+        err.textContent = 'Choose a response to ' + (missing.length > 1 ? 'each event' : 'the event') + ' first.';
+        document.getElementById('ev-' + missing[0].id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      var total = open.reduce(function (t, p) {
+        var o = D.events[p.id].options.filter(function (x) { return x.id === ui.choices[p.id]; })[0];
+        return t + o.cost;
+      }, 0);
+      if (total > g.credits) { err.textContent = 'Those responses cost ' + total + ' credits and you have ' + g.credits + '. Pick a cheaper option.'; return; }
+      open.forEach(function (p) { S.resolveEvent(g, p.id, ui.choices[p.id]); });
+      S.enterNextPhase(g);
+      if (g.stage === 'm18') { S.runMonth18(g); g.stage = 'm18'; }
+      ui.choices = {};
+      go();
+    },
+    'to-debrief': function () {
+      var g = ui.game;
+      g.stage = 'debrief';
+      if (!ui.recorded) {
+        var a = S.analyze(g);
+        ui.attempts.push({ title: a.title, val18: a.val18, spent: a.credits.levers + a.credits.events, archetype: a.archetype.name });
+        if (ui.attempts.length > 10) ui.attempts.shift();
+        ui.recorded = true;
+      }
+      go();
+    },
+    'toggle-table': function (b) {
+      var t = document.getElementById('adopt-table');
+      t.hidden = !t.hidden;
+      b.textContent = t.hidden ? 'Show as a table' : 'Hide the table';
+    },
+    copy: function () {
+      var text = summaryText(), msg = document.getElementById('copy-msg'), fb = document.getElementById('copy-fallback');
+      function fallback() {
+        msg.textContent = 'Select the text below and copy it.';
+        fb.innerHTML = '<textarea class="copy-fallback" readonly aria-label="Your summary">' + esc(text) + '</textarea>';
+        var ta = fb.querySelector('textarea');
+        ta.focus();
+        ta.select();
+      }
+      try {
+        navigator.clipboard.writeText(text).then(function () { msg.textContent = 'Copied. Paste it into your notes, an email, or your workbook.'; }, fallback);
+      } catch (e) { fallback(); }
+    },
+    print: function () { window.print(); },
+    replay: function () { newRun(); ui.view = 'game'; go(); }
+  };
+
+  app.addEventListener('click', function (e) {
+    var set = e.target.closest('[data-set]');
+    if (set) { setLevel(set.getAttribute('data-for'), +set.getAttribute('data-set')); return; }
+    var b = e.target.closest('[data-action]');
+    if (b && actions[b.getAttribute('data-action')]) actions[b.getAttribute('data-action')](b, e);
+  });
+
+  app.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.matches('input[type="range"][data-lever]')) setLevel(t.getAttribute('data-lever'), +t.value);
+    else if (t.matches('textarea[data-field]')) { ui.reflection[t.getAttribute('data-field')] = t.value; save(); }
+  });
+
+  app.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t.matches('input[type="radio"][data-event]')) return;
+    var id = t.getAttribute('data-event');
+    ui.choices[id] = t.value;
+    var p = ui.game.pending.filter(function (x) { return x.id === id; })[0];
+    var card = document.getElementById('ev-' + id);
+    if (p && card) {
+      var tmp = document.createElement('div');
+      tmp.innerHTML = eventCard(p);
+      card.replaceWith(tmp.firstChild);
+      var again = document.querySelector('input[name="ev-' + id + '"][value="' + t.value + '"]');
+      if (again) again.focus();
+    }
+    var err = document.getElementById('continue-err');
+    if (err) err.textContent = '';
+    save();
+  });
+
+  var resizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawAdoption, 150);
+  });
+
+  function boot(hotData) {
+    if (hotData && hotData.ui) restore(hotData.ui);
+    else restore(loadStored());
+    render();
+  }
+
+  try {
+    if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
+      window.claude.hot.snapshot(function () { return { ui: persisted() }; });
+    }
+  } catch (e) { /* not running inside a viewer */ }
+
+  if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(boot);
+  else boot((window.claude && window.claude.hot && window.claude.hot.data) || {});
+})();
+
+</script>
+</body>
+</html>
