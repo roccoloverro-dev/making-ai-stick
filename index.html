@@ -75,7 +75,7 @@ a { color: var(--accent); }
 :focus-visible { outline: 3px solid rgba(28, 92, 171, 0.4); outline-offset: 2px; border-radius: 4px; }
 
 .wrap {
-  max-width: 1120px;
+  max-width: 1240px;
   margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -136,10 +136,13 @@ p { margin: 0; }
   padding-block: 10px;
   flex-wrap: wrap;
 }
-.brand { display: flex; align-items: center; gap: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; border: 0; background: none; padding: 4px 6px 4px 0; border-radius: 6px; cursor: pointer; text-align: left; }
 .brand-name { font-weight: 800; letter-spacing: -0.01em; font-size: 16px; }
 .brand-sub { font-size: 13px; color: var(--ink-3); padding-left: 10px; border-left: 1px solid var(--line-2); }
 .facil { font-size: 13px; color: var(--ink-3); }
+.topnav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 2px 12px; }
+.toplink { border: 0; background: none; padding: 6px 8px; border-radius: 6px; font-size: 14px; font-weight: 650; color: var(--accent); cursor: pointer; }
+.toplink:hover { background: var(--accent-soft); }
 
 /* Status bar */
 .status {
@@ -184,7 +187,8 @@ p { margin: 0; }
 .credits-num.over { color: var(--risk); }
 .credits-lab { font-size: 12px; color: var(--ink-3); line-height: 1.25; }
 .credits-lab b { color: var(--ink-2); font-weight: 650; }
-.gauge { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+.gauge { display: flex; flex-direction: column; gap: 4px; min-width: 150px; border: 0; background: none; padding: 2px 0; border-radius: 6px; cursor: pointer; text-align: left; }
+.gauge:hover .gauge-top span { text-decoration: underline; }
 .gauge-top { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ink-3); }
 .gauge-top b { color: var(--ink); font-weight: 650; }
 .gauge-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
@@ -196,6 +200,30 @@ p { margin: 0; }
 .gauge.g-heavy .gauge-bar span { background: var(--warn-soft); }
 .gauge.g-heavy .gauge-bar span:nth-child(-n+3) { background: var(--warn-dot); }
 .gauge.g-over .gauge-bar span { background: var(--risk-dot); }
+
+/* Jump chips: the moves in the status bar, and the sections of the debrief */
+.movenav { display: flex; gap: 6px; padding-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+.movenav::-webkit-scrollbar { display: none; }
+.mv-chip {
+  flex: none;
+  border: 1px solid var(--line-2);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mv-chip:hover { border-color: var(--ink-3); }
+.mv-chip b { margin-left: 4px; font-variant-numeric: tabular-nums; color: var(--ink-3); }
+.mv-chip.has { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent); }
+.mv-chip.has b { color: var(--accent); }
+.mv-chip.review { margin-left: auto; }
+.jump { display: flex; flex-wrap: wrap; gap: 6px; }
+#stand, #levers, #commit, #tips, .move, .event { scroll-margin-top: 128px; }
+[id^="d-"] { scroll-margin-top: 16px; }
 
 /* Buttons */
 .btn {
@@ -245,7 +273,7 @@ p { margin: 0; }
 .fact span { font-size: 13px; color: var(--ink-3); }
 .conds {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 0;
   border-top: 1px solid var(--line);
 }
@@ -345,8 +373,12 @@ p { margin: 0; }
 .delta.down { color: var(--risk); }
 .delta.flat { color: var(--ink-3); }
 .mini-conds { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.mini-cond { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.mini-cond { border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: var(--bg); text-align: left; cursor: pointer; }
+.mini-cond:hover { border-color: var(--ink-3); }
+.mini-cond.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
 .mini-cond b { font-size: 13px; }
+.mc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cond-why { grid-column: 1 / -1; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
 
 /* Plan */
 .phase-head { display: flex; flex-direction: column; gap: 12px; }
@@ -357,7 +389,7 @@ p { margin: 0; }
 .move { display: flex; flex-direction: column; gap: 14px; }
 .move-head { display: flex; align-items: baseline; gap: 6px 14px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
 .move-head p { color: var(--ink-2); font-size: 14px; }
-.lever-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 12px; }
+.lever-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 12px; }
 .lever {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -376,7 +408,7 @@ p { margin: 0; }
 .lever-cost .cu { display: block; font-size: 11.5px; color: var(--ink-3); }
 .lever-short { font-size: 14px; color: var(--ink-2); }
 .lever-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-3); }
-.lever-meta .sep { width: 1px; height: 14px; background: var(--line-2); margin: 0 4px; }
+.lever-meta .lm-time { margin-left: auto; padding-left: 8px; white-space: nowrap; }
 .lever-level { font-size: 14px; color: var(--ink); min-height: 2.9em; }
 .lever-level b { font-weight: 700; }
 .lever.off-now .lever-level { color: var(--ink-3); }
@@ -442,13 +474,71 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px rgba
   flex-direction: column;
   gap: 14px;
 }
-.commit-sum { font-size: 15px; color: var(--ink-2); }
+.commit-sum { font-size: 15px; color: var(--ink-2); max-width: 76ch; }
 .commit-sum b { color: var(--ink); }
+.commit-sum.caution, .commit-sum.caution b { color: var(--warn); }
+.commit-sum.bad, .commit-sum.bad b { color: var(--risk); }
+.picks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 28px; }
+.picks li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.picks .pk { color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Planning aids: first-run tips, quick start, the condition filter, last phase's settings */
+.callout.tips { border-color: var(--accent-line); background: var(--accent-soft); gap: 12px; }
+.callout h2 { font-size: 18px; }
+.tips-list { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; max-width: 76ch; }
+.short-list { margin: 2px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--ink-2); }
+.quick { border: 1px dashed var(--line-2); border-radius: var(--radius); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.quick p { font-size: 14.5px; color: var(--ink-2); }
+.quick p b { color: var(--ink); }
+.levers { display: flex; flex-direction: column; gap: 48px; }
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+.filter-bar p { font-size: 14.5px; color: var(--ink-2); max-width: 72ch; }
+.filter-bar p b { color: var(--ink); }
+.tag.new { background: var(--accent-soft); color: var(--accent); font-weight: 650; font-size: 11px; margin-left: 4px; vertical-align: 2px; }
+.lever-ref { font-size: 12.5px; color: var(--ink-3); }
+.lever-ref:empty { display: none; }
+.ticks button.was::after { content: ""; display: block; width: 5px; height: 5px; margin: 1px auto 0; border-radius: 50%; background: var(--ink-3); }
+.ticks button:first-child.was::after { margin-left: 2px; }
+.ticks button:last-child.was::after { margin-right: 2px; }
+.field .opt { font-weight: 400; font-size: 13px; color: var(--ink-3); }
+input[type="text"] {
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  background: var(--bg);
+  width: 100%;
+  max-width: 640px;
+}
+input[type="text"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(28, 92, 171, 0.2); }
+
+/* How to play */
+.defs { margin: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.defs > div { display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr); gap: 4px 24px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.defs dt { font-weight: 680; font-size: 15px; }
+.defs dd { margin: 0; font-size: 15px; color: var(--ink-2); max-width: 68ch; }
 
 /* Notice */
 .notice { border: 1px solid #f0d49a; background: var(--warn-soft); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .notice h2 { font-size: 17px; }
-.notice p { color: var(--ink-2); font-size: 15px; }
+.notice p { color: var(--ink-2); font-size: 15px; max-width: 76ch; }
+.notice p b { color: var(--ink); }
+.notice.info { border-color: var(--line-2); background: var(--wash); }
+.fx-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.fx { font-size: 12px; font-weight: 650; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.fx.up { background: var(--good-soft); color: var(--good); }
+.fx.down { background: var(--risk-soft); color: var(--risk); }
 
 /* Roadmap and heatmap */
 details.roadmap { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
@@ -473,10 +563,11 @@ table.heat tfoot th, table.heat tfoot td { border-top: 1px solid var(--line); fo
 /* Pulse */
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .tile { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
-.tile .tl { font-size: 13px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
+.tile .tl { font-size: 13px; color: var(--ink-3); display: flex; flex-direction: column; gap: 1px; }
 .tile .tv { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
 .tile .ts { font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
 .tile.fogged .tv { font-size: 16px; font-weight: 650; color: var(--ink-3); padding-block: 7px; }
+.tile.key { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .tile.watch { background: var(--wash); border-color: transparent; }
 .tile.watch .tv { color: var(--ink-2); }
 .watch-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
@@ -524,6 +615,12 @@ table.heat tfoot th, table.heat tfoot td { border-top: 1px solid var(--line); fo
 .option .od { font-size: 13.5px; color: var(--ink-2); }
 .option .oc { font-size: 12.5px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .option.sel .oc { color: var(--accent); }
+fieldset.plain { border: 0; margin: 0; padding: 0; min-width: 0; }
+fieldset.plain legend { padding: 0; margin-bottom: 8px; font-size: 13px; color: var(--ink-3); }
+#predict legend { font-size: 15.5px; font-weight: 680; color: var(--ink); margin-bottom: 10px; }
+.prompt { border: 1px solid var(--line-2); border-radius: 14px; background: var(--wash); padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; }
+.prompt-q { font-family: var(--font-read); font-size: 18px; line-height: 1.6; max-width: 62ch; }
+.pred { font-size: 15px; font-weight: 600; }
 
 /* Debrief */
 .outcome { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; align-items: end; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
@@ -574,6 +671,21 @@ table.data th { font-size: 12px; color: var(--ink-3); font-weight: 650; }
 .patterns .pw { font-size: 13px; font-weight: 650; color: var(--risk); }
 .patterns li.ok .pt { color: var(--ink-2); }
 .patterns li.ok .pw { color: var(--good); }
+.patterns .pf { font-size: 14px; margin-top: 4px; max-width: 76ch; }
+.use-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; }
+.use-list li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 20px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.use-list li:last-child { border-bottom: 0; }
+.use-list li span:last-child { color: var(--ink-2); text-align: right; }
+.use-list li.unused span:last-child { color: var(--warn); font-weight: 650; }
+.story { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.story > li { display: flex; flex-direction: column; gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.st-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 14px; }
+.st-num { font-size: 15px; }
+.st-ev { font-size: 14.5px; color: var(--ink-2); }
+.st-ev b { color: var(--ink); }
+.st-intent { font-family: var(--font-read); font-style: italic; font-size: 15px; color: var(--ink-2); }
+.story .signals li { font-size: 14.5px; }
+.challenges { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--ink-2); max-width: 74ch; }
 .list-plain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .list-plain li { font-size: 15px; display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 .list-plain li span { font-size: 13px; color: var(--ink-3); }
@@ -623,6 +735,14 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   .mini-conds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .status .btn { display: none; }
   .status-in { gap: 8px 18px; padding-block: 8px; }
+  .status.planning .stepper { display: none; }
+  .movenav { padding-bottom: 8px; }
+  .mv-chip.review { margin-left: 0; }
+  .topbar.in-game .facil { display: none; }
+  .topbar-in { min-height: 50px; padding-block: 6px; }
+  .defs > div { grid-template-columns: minmax(0, 1fr); }
+  .prompt-q { font-size: 17px; }
+  #stand, #levers, #commit, #tips, .move, .event { scroll-margin-top: 112px; }
   .lead { font-size: 17px; }
   .health-row { grid-template-columns: minmax(0, 1fr) auto; }
   .health-row .track { grid-column: 1 / -1; grid-row: 2; }
@@ -637,10 +757,10 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   * { transition: none !important; scroll-behavior: auto !important; }
 }
 @media print {
-  .topbar .facil, .status, .no-print, .actions, details.about summary { display: none !important; }
+  .topbar .topnav, .status, .no-print, .actions, details.about summary { display: none !important; }
   .screen { padding-block: 0; gap: 28px; }
-  .event, .lever, .callout, .next-move { break-inside: avoid; }
-  textarea { border: 0; padding: 0; min-height: 0; }
+  .event, .lever, .callout, .next-move, .story > li, .learn-card { break-inside: avoid; }
+  textarea, input[type="text"] { border: 0; padding: 0; min-height: 0; }
 }
 
 </style>
@@ -663,7 +783,7 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       title: `Making AI Stick Simulation`,
       course: `Making AI Stick`,
       facilitator: `Dr. Rocco Loverro`,
-      version: `1.0`
+      version: `1.1`
     },
 
     budget: 100,
@@ -744,6 +864,76 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
     adkar: {
       A: `Awareness`, D: `Desire`, K: `Knowledge`, B: `Ability`, R: `Reinforcement`
+    },
+
+    // Short lever names for sentences such as "Lifted by manager previews and town halls."
+    leverTags: {
+      assess: `the readiness assessment`, listen: `listening sessions`, sponsor: `visible sponsorship`,
+      mgrPreview: `manager previews`, mgrCoach: `manager coaching`, champions: `the champion network`,
+      union: `union engagement`, clearPlate: `clearing the plate`, email: `email updates`,
+      townhall: `town halls`, impact: `workforce-impact conversations`, guardrails: `rules for responsible use`,
+      elearning: `e-learning`, jobaids: `job aids`, officehours: `floor support`, labs: `hands-on labs`,
+      recognition: `recognition`, dashboard: `the early-warning dashboard`, perfStandards: `performance standards`,
+      workflow: `the workflow change`
+    },
+
+    // Why a condition rose or fell in a phase, other than a lever.
+    reasons: {
+      fade: `time passing with little to refresh it`,
+      fatigue: `message fatigue`,
+      townhallFirst: `a town hall held before managers were briefed`,
+      overloaded: `an overloaded workforce`,
+      mandateFirst: `standards that arrived before people could use the tool`,
+      grievance: `the union grievance`,
+      sponsorDecay: `a sponsor who went quiet`,
+      managerSkip: `managers who weren't briefed before launch`,
+      vagueImpact: `the unanswered question about jobs`,
+      toolOnly: `training that taught the tool but not the workflow`,
+      load: `a heavy workload this phase`,
+      recover: `a light workload`,
+      timeBack: `time the assistant is giving back`
+    },
+
+    adaptNote: `Adaptive Capacity also recovers when the workforce load stays light, and as real use gives people time back.`,
+
+    tips: [
+      `Each phase is funded on its own. Sliders start at Off, so an activity only runs in the phases where you pay for it.`,
+      `Each step up a slider costs the same but adds a little less. Light buys reach. Intensive buys depth.`,
+      `Timing matters. The same activity can land well in one phase and poorly in another.`,
+      `Every activity takes people's time. Watch the workforce load: past what people can absorb, everything lands softer.`,
+      `You only see what you measure. Without the early-warning dashboard, your pulse checks show logins and course completions.`,
+      `Adoption follows the weakest condition. Select a condition under "Where things stand" to see the levers that build it.`
+    ],
+
+    // One question per pulse check, for a pod to talk through before planning the next phase.
+    prompts: {
+      1: `Nobody has touched the tool yet. Who already knows what changes for their job, and who told them?`,
+      2: `Which numbers on this page would your own agency's dashboard show you? Which would it miss?`,
+      3: `If the program office closed today, what would keep caseworkers using the assistant?`,
+      4: `The program office closes at month 12. What in your plan will still be working six months after you leave?`
+    },
+
+    predict: {
+      question: `Six months after the program office closes, how many caseworkers will be using the assistant in their real work?`,
+      options: [
+        { id: 'more', label: `More than today`, said: `more caseworkers would be using it` },
+        { id: 'same', label: `About the same`, said: `use would hold about steady` },
+        { id: 'fewer', label: `Fewer than today`, said: `fewer caseworkers would be using it` }
+      ]
+    },
+
+    challenges: {
+      won: [
+        `Lean: make it stick on 75 credits or fewer.`,
+        `No town halls: find another route to Conviction.`,
+        `No hands-on labs: build Capability another way.`,
+        `A different pattern: win with a strategy other than this one.`
+      ],
+      lost: [
+        `Load your last plan in each phase and change only what would build your weakest condition.`,
+        `Remove one failure pattern at a time and watch what changes.`,
+        `Hold back a third of your credits for Scale and Sustain.`
+      ]
     },
 
     levers: [
@@ -995,6 +1185,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     case: {
       agency: `Federal Benefits Delivery Agency`,
       tool: `Case Drafting Assistant`,
+      short: [
+        `You lead adoption of an AI drafting assistant for 4,200 caseworkers, with no authority over the regions.`,
+        `The tool is built and deployed. Your job is getting it used and valuable.`,
+        `The goal is 80% meaningful use at month 18, six months after your program office closes.`,
+        `Working against you: a failed rollout three years ago, stretched teams, quotas that reward the old way, a wary union, and open privacy questions.`
+      ],
       role: `You're the change lead in the agency's AI Program Office. You report to the Chief AI Officer and have no authority over the regional offices, so everything you get done goes through sponsors, managers, and peers.`,
       agencyText: `About 6,800 people process benefits claims for the public. That includes 4,200 caseworkers across ten regional processing centers and about 350 supervisors. Headquarters has policy, IT, privacy, and labor relations staff.`,
       change: `The Case Drafting Assistant is built into the case management system. It drafts case summaries, letters requesting evidence, and initial decisions, and the caseworker reviews and approves each one. It's built, cleared by security and privacy, and licensed for three years.`,
@@ -1046,7 +1242,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
           { id: 'negotiate', label: `Negotiate now`, cost: 3, detail: `Bring labor relations and the sponsor to the table this week. The pilot starts on time.` },
           { id: 'proceed', label: `Start the pilot as planned`, cost: 0, detail: `Go ahead and deal with it later.` },
           { id: 'delay', label: `Delay the pilot six weeks`, cost: 0, detail: `Bargain properly, but lose time. Fewer centers go live by month 5.` }
-        ]
+        ],
+        outcomes: {
+          negotiate: `Labor relations and your sponsor met the union local that week. An agreement on the pilot was signed, and the pilot starts on time.`,
+          proceed: `The pilot started on schedule. The union filed a grievance over changes made without bargaining, and stewards are telling members to write down every problem with the tool.`,
+          delay: `You took six weeks to bargain properly. The union signed, but the pilot starts late. Only four centers, about 40% of caseworkers, will be live by month 5.`
+        }
       },
       headline: {
         after: 2,
@@ -1056,6 +1257,17 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
           { id: 'qa', label: `The Administrator holds a candid Q&A on human review`, cost: 4, detail: `Live and unscripted, with your review rules on screen.` },
           { id: 'faq', label: `Publish an FAQ on how review works`, cost: 1, detail: `Fast and clear, but nobody sees a leader stand behind it.` },
           { id: 'silent', label: `Say nothing`, cost: 0, detail: `It's another agency's problem.` }
+        ],
+        outcomes: {
+          qa: `The Administrator took unscripted questions for an hour with your review rules on screen. Caseworkers saw a leader stand behind the human-review step.`,
+          faq: `The FAQ went out within a day and answered the main question: a caseworker reviews and approves every draft. It helped, though nobody saw a leader stand behind it.`,
+          silent: `You said nothing. In the break rooms, the story turned into "it could happen here."`
+        },
+        // How much earlier groundwork softened the hit: weak, partial, strong.
+        soft: [
+          `With no clear rules for human review in place, the story hit hard.`,
+          `Your earlier groundwork softened the story a little.`,
+          `Your rules for responsible use took much of the sting out of the story.`
         ]
       },
       win: {
@@ -1065,7 +1277,11 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         options: [
           { id: 'amplify', label: `Spread the story through peers and leaders`, cost: 2, detail: `Caseworkers from Region 3 tell it in their own words.` },
           { id: 'skip', label: `Keep the focus on scaling`, cost: 0, detail: `Celebrate later.` }
-        ]
+        ],
+        outcomes: {
+          amplify: `Region 3 caseworkers told the story themselves at two regional meetings. Skeptics in other centers started asking for a look.`,
+          skip: `The result stayed in a status report. Few people outside Region 3 heard about it.`
+        }
       },
       sponsor: {
         after: 3,
@@ -1075,6 +1291,16 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
           { id: 'brief', label: `Brief the new deputy and hand over the sponsor role`, cost: 2, detail: `A real handover: the plan, the numbers, and the people.` },
           { id: 'admin', label: `Ask the Administrator to step in visibly`, cost: 3, detail: `The agency head uses the tool live at the next all-hands.` },
           { id: 'carry', label: `Carry on`, cost: 0, detail: `The sponsor group and the managers will hold it.` }
+        ],
+        outcomes: {
+          brief: `You walked the new deputy through the plan, the numbers, and the people. The sponsor role changed hands without a long gap.`,
+          admin: `The Administrator used the assistant live at the all-hands and named the new deputy as sponsor.`,
+          carry: `Nobody picked up the sponsor role. Within weeks, people were asking whether the assistant was still a priority.`
+        },
+        soft: [
+          `Most of the backing lived in one person, so the loss was felt everywhere.`,
+          `Some of the backing lived in the sponsor group and the manager layer, which softened the loss.`,
+          `Your sponsor group and coaching managers had already spread the backing, so the change barely slowed.`
         ]
       },
       cr: {
@@ -1100,7 +1326,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       { id: 'pCoh', kind: 'pos', text: `It's in the case system, the review rules are clear, and the union signed off. It just fits now.`, who: `Section chief, Region 5` },
       { id: 'pReinf', kind: 'pos', text: `Our unit got recognized for quality, not just speed. People noticed what got rewarded.`, who: `Caseworker, Region 8` },
       { id: 'pAdapt', kind: 'pos', text: `Taking the quarterly data call off our plate is the only reason we had time to learn this.`, who: `Section chief, Region 6` },
-      { id: 'pUnion', kind: 'pos', text: `We got to shape how the pilot worked. That's different from being told.`, who: `Union steward` }
+      { id: 'pUnion', kind: 'pos', text: `We got to shape how the pilot worked. That's different from being told.`, who: `Union steward` },
+      { id: 'pSponsor', kind: 'pos', text: `Our director pulled up the assistant in the regional staff meeting and drafted a letter with it. That told me more than the memo did.`, who: `Section chief, Region 9` },
+      // Before launch nobody has used the tool, so these speak to how the change is being handled.
+      { id: 'preMgr', kind: 'pos', text: `My section chief sat us down before the announcement and told us what's coming. That's a first.`, who: `Caseworker, Region 3` },
+      { id: 'preImpact', kind: 'pos', text: `They told us straight what changes for our jobs and what doesn't. I can work with straight.`, who: `Caseworker, 14 years` },
+      { id: 'preSponsor', kind: 'pos', text: `The deputy drafted a real evidence letter with it in front of us. This isn't just another memo.`, who: `Section chief, Region 7` }
     ],
 
     signals: {
@@ -1123,13 +1354,20 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     },
 
     patterns: [
-      { id: 'sponsorDecay', name: `Sponsor decay`, desc: `The sponsor announces, then disappears. The workforce reads it as deprioritization.` },
-      { id: 'managerSkip', name: `Manager skip`, desc: `Supervisors learn alongside their teams. The cascade fails before it starts.` },
-      { id: 'toolOnly', name: `Tool-only training`, desc: `Training taught the tool, not the workflow. No model of what good looks like.` },
-      { id: 'vagueImpact', name: `Vague impact story`, desc: `The workforce-impact story was deferred or vague, and vagueness reads as a threat.` },
-      { id: 'wrongMetrics', name: `Wrong metrics`, desc: `The dashboard leads with logins. It looks good and tells you nothing.` },
-      { id: 'noReinforcement', name: `No reinforcement`, desc: `Use spikes at launch and decays, and no one notices until it's too late.` },
-      { id: 'overloaded', name: `Change on a full plate`, desc: `Change stacked on a full plate doesn't stick. It just adds stress.` }
+      { id: 'sponsorDecay', name: `Sponsor decay`, desc: `The sponsor announces, then disappears. The workforce reads it as deprioritization.`,
+        fix: `Keep the sponsor visible in every phase, and spread the backing across a sponsor group and the manager layer so it outlasts one person.` },
+      { id: 'managerSkip', name: `Manager skip`, desc: `Supervisors learn alongside their teams. The cascade fails before it starts.`,
+        fix: `Brief section chiefs in Prepare, before anyone else hears it.` },
+      { id: 'toolOnly', name: `Tool-only training`, desc: `Training taught the tool, not the workflow. No model of what good looks like.`,
+        fix: `Pair courses with practice on real cases: labs, floor support, or champions.` },
+      { id: 'vagueImpact', name: `Vague impact story`, desc: `The workforce-impact story was deferred or vague, and vagueness reads as a threat.`,
+        fix: `Say what changes for people's jobs, and what doesn't, before launch.` },
+      { id: 'wrongMetrics', name: `Wrong metrics`, desc: `The dashboard leads with logins. It looks good and tells you nothing.`,
+        fix: `Fund the early-warning dashboard by Pilot and launch, so you can see real use while there's time to act.` },
+      { id: 'noReinforcement', name: `No reinforcement`, desc: `Use spikes at launch and decays, and no one notices until it's too late.`,
+        fix: `Hold credits back for Scale and Sustain: recognition, manager routines, standards, and the workflow.` },
+      { id: 'overloaded', name: `Change on a full plate`, desc: `Change stacked on a full plate doesn't stick. It just adds stress.`,
+        fix: `Clear something off people's plates first, or spread the heavy activities across phases.` }
     ],
 
     learning: {
@@ -1241,7 +1479,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   function available(l, n) { return (l.fit[n - 1] || 0) > 0; }
 
   function availability(l, n) {
-    if (available(l, n)) return { open: true, note: (l.id === 'workflow' && n === 2) ? 'Pilot centers only' : '' };
+    if (available(l, n)) {
+      var late = '';
+      if (l.id === 'workflow' && n === 2) late = 'Pilot centers only';
+      if (l.id === 'mgrPreview' && n === 2) late = 'Late for the pilot centers. It still helps the next wave.';
+      return { open: true, note: late };
+    }
     for (var k = n + 1; k <= 4; k++) if (available(l, k)) return { open: false, note: 'Opens in ' + D.phases[k - 1].name };
     if (l.id === 'mgrPreview') return { open: false, note: 'Only before launch' };
     var lastOpen = 1;
@@ -1262,6 +1505,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     var c = 0;
     for (var id in plan) if (LEV[id] && plan[id] > 0) c += LEV[id].cost * plan[id];
     return c;
+  }
+
+  // The levers that meaningfully build a condition, strongest first.
+  function buildersOf(cid) {
+    return D.levers.filter(function (l) { return (l.effects[cid] || 0) >= 2; })
+      .sort(function (a, b) { return b.effects[cid] - a.effects[cid]; });
   }
 
   // Workforce load: the time a phase's activities demand, measured against what people can absorb.
@@ -1339,8 +1588,8 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     var s = {
       v: 1, stage: 'welcome', phase: 1, credits: D.budget, frozen: 0, eventCredits: 0,
       cond: cond, floors: floors, rUsed: 0, rVal: 0, coverage: 0, targeting: 1,
-      plans: {}, spend: {}, loads: {}, flags: {}, signals: {}, voices: {},
-      events: {}, pending: [], notice: null, delay: false, grievance: false,
+      plans: {}, spend: {}, loads: {}, flags: {}, signals: {}, voices: {}, why: {}, intents: {},
+      events: {}, pending: [], notice: null, recap: null, prediction: null, delay: false, grievance: false,
       silentHeadline: false, winAmplified: false, sponsorHit: 0,
       contrib: {}, contribCond: {}, credSpent: {},
       leak: { mistimed: 0, penalty: 0, items: [] },
@@ -1369,12 +1618,20 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     if (flags.toolOnly || (n >= 2 && c.cap < 40 && cum(s, 'officehours', n) === 0)) add('once', 12);
     if (flags.managerSkip) add('skip', 18);
     if (flags.fatigue) add('fatigue', 14);
-    if (c.conv >= 60) add('pConv', c.conv - 55);
-    if (c.cap >= 60) add('pCap', c.cap - 55);
-    if (c.endo >= 60) add('pEndo', c.endo - 55);
-    if (c.coh >= 60) add('pCoh', c.coh - 55);
-    if (c.reinf >= 60) add('pReinf', c.reinf - 55);
-    if (c.adapt >= 60 && cum(s, 'clearPlate', n) > 0) add('pAdapt', c.adapt - 55);
+    if (n >= 2) {
+      // Nobody can praise a tool they haven't touched: use-based quotes wait until it's live.
+      if (c.conv >= 60) add('pConv', c.conv - 55);
+      if (c.cap >= 60) add('pCap', c.cap - 55);
+      if (c.endo >= 60 && cum(s, 'mgrCoach', n) > 0) add('pEndo', c.endo - 55);
+      if (c.coh >= 60) add('pCoh', c.coh - 55);
+      if (n >= 3 && c.reinf >= 60) add('pReinf', c.reinf - 55);
+      if (c.adapt >= 60 && cum(s, 'clearPlate', n) > 0) add('pAdapt', c.adapt - 55);
+    } else {
+      if (lvl(s, 1, 'mgrPreview') >= 2) add('preMgr', 12);
+      if (lvl(s, 1, 'impact') >= 1) add('preImpact', 10);
+      if (lvl(s, 1, 'sponsor') >= 2) add('preSponsor', 9);
+    }
+    if (n >= 2 && c.endo >= 60 && cum(s, 'mgrCoach', n) === 0 && lvl(s, n, 'sponsor') >= 2) add('pSponsor', c.endo - 55);
     if (n <= 2 && cum(s, 'union', n) >= 2) add('pUnion', 8);
     cands.forEach(function (v) { if (s.usedVoices.indexOf(v.id) >= 0) v.w -= 12; });
     var byW = function (a, b) { return b.w - a.w; };
@@ -1403,8 +1660,13 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     var li = loadInfo(c0.adapt, plan);
     s.loads[n] = li;
     var lv = function (id) { return plan[id] || 0; };
-    var flags = {}, raw = {}, pen = {}, decay = {}, leverRaw = {};
-    COND.forEach(function (id) { raw[id] = 0; pen[id] = 0; decay[id] = 0; });
+    var flags = {}, raw = {}, pen = {}, decay = {}, leverRaw = {}, reasons = {};
+    COND.forEach(function (id) { raw[id] = 0; pen[id] = 0; decay[id] = 0; reasons[id] = {}; });
+    // A penalty, with its cause recorded so the pulse check can say why a condition fell.
+    function hit(cid, amount, key) {
+      pen[cid] -= amount;
+      reasons[cid][key] = (reasons[cid][key] || 0) + amount;
+    }
 
     var absorb = 0.55 + 0.6 * c0.adapt / 100;
     var phaseMult = (n === 2 && s.delay) ? 0.85 : 1;
@@ -1461,22 +1723,22 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       }
     });
 
-    if (fatigue) { pen.conv -= 2.5; flags.fatigue = true; }
-    if (flags.townhallFirst) pen.conv -= 2;
-    if (over) { pen.conv -= 1.5 * (li.load - li.overload); flags.overloaded = true; }
+    if (fatigue) { hit('conv', 2.5, 'fatigue'); flags.fatigue = true; }
+    if (flags.townhallFirst) hit('conv', 2, 'townhallFirst');
+    if (over) { hit('conv', 1.5 * (li.load - li.overload), 'overloaded'); flags.overloaded = true; }
     if (noise < 0.96) flags.noise = true;
-    if (flags.mandateFirst) { pen.conv -= 6; pen.adapt -= 4; }
-    if (flags.grievance) pen.coh -= 5;
-    if (n >= 3 && lv('sponsor') === 0 && maxLevel(s, 'sponsor', 1, n - 1) >= 2) { pen.endo -= 6; flags.sponsorDecay = true; }
+    if (flags.mandateFirst) { hit('conv', 6, 'mandateFirst'); hit('adapt', 4, 'mandateFirst'); }
+    if (flags.grievance) hit('coh', 5, 'grievance');
+    if (n >= 3 && lv('sponsor') === 0 && maxLevel(s, 'sponsor', 1, n - 1) >= 2) { hit('endo', 6, 'sponsorDecay'); flags.sponsorDecay = true; }
     if (n === 2 && lvl(s, 1, 'mgrPreview') === 0) {
       flags.managerSkip = true;
-      pen.endo -= lv('mgrPreview') >= 2 ? 3 : 6;
-      pen.conv -= 3;
+      hit('endo', lv('mgrPreview') >= 2 ? 3 : 6, 'managerSkip');
+      hit('conv', 3, 'managerSkip');
     }
-    if (n === 2 && cum(s, 'impact', 2) === 0) { flags.vagueImpact = true; pen.conv -= 6; }
-    if (n === 3 && cum(s, 'impact', 3) === 0) pen.conv -= 4;
+    if (n === 2 && cum(s, 'impact', 2) === 0) { flags.vagueImpact = true; hit('conv', 6, 'vagueImpact'); }
+    if (n === 3 && cum(s, 'impact', 3) === 0) hit('conv', 4, 'vagueImpact');
     var practice = function (k) { return (lvl(s, k, 'labs') >= 2 ? 1 : 0) + lvl(s, k, 'officehours') + lvl(s, k, 'champions'); };
-    if (n >= 2 && lv('elearning') > 0 && practice(n) + (n > 2 ? practice(n - 1) : 0) === 0) { flags.toolOnly = true; pen.conv -= 2; }
+    if (n >= 2 && lv('elearning') > 0 && practice(n) + (n > 2 ? practice(n - 1) : 0) === 0) { flags.toolOnly = true; hit('conv', 2, 'toolOnly'); }
     if (n >= 2 && !measured) flags.wrongMetrics = true;
 
     var reinfNow = sum(REINFORCING.map(lv));
@@ -1488,10 +1750,11 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       decay[id] = rate * D.model.decayScale * ph.len * Math.max(0, c0[id] - s.floors[id]);
     });
 
-    var dAdapt = 0;
-    if (li.load > li.comfortable) dAdapt -= (li.load - li.comfortable) * 1.1;
-    else dAdapt += 1.2 * (1 - li.load / li.comfortable) * (ph.len / 3);
-    dAdapt += 5 * s.rVal * s.coverage * (ph.len / 3);
+    var heavy = li.load > li.comfortable;
+    var drain = heavy ? (li.load - li.comfortable) * 1.1 : 0;
+    var recover = heavy ? 0 : 1.2 * (1 - li.load / li.comfortable) * (ph.len / 3);
+    var timeBack = 5 * s.rVal * s.coverage * (ph.len / 3);
+    var dAdapt = recover - drain + timeBack;
 
     var hf = {};
     COND.forEach(function (id) {
@@ -1500,6 +1763,30 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       var v = c0[id] - decay[id] + raw[id] * hf[id] + p + (id === 'adapt' ? dAdapt : 0);
       s.cond[id] = clamp(v, 0, 100);
     });
+
+    // For each condition, the two biggest lifts and the two biggest drags this phase.
+    var byV = function (a, b) { return b.v - a.v; }, keyOf = function (x) { return x.k; };
+    var why = {};
+    COND.forEach(function (id) {
+      var ups = [], downs = [];
+      for (var lid0 in leverRaw) {
+        var lift = (leverRaw[lid0][id] || 0) * hf[id];
+        if (lift >= 1) ups.push({ k: lid0, v: lift });
+      }
+      if (id === 'adapt') {
+        if (recover >= 1) ups.push({ k: 'recover', v: recover });
+        if (timeBack >= 1) ups.push({ k: 'timeBack', v: timeBack });
+        if (drain >= 1) downs.push({ k: 'load', v: drain });
+      }
+      for (var key in reasons[id]) {
+        var drag = reasons[id][key] * soften;
+        if (drag >= 1) downs.push({ k: key, v: drag });
+      }
+      if (decay[id] >= 1.5) downs.push({ k: 'fade', v: decay[id] });
+      why[id] = { net: s.cond[id] - c0[id], up: ups.sort(byV).slice(0, 2).map(keyOf), down: downs.sort(byV).slice(0, 2).map(keyOf) };
+    });
+    s.why = s.why || {};
+    s.why[n] = why;
 
     for (var lid in leverRaw) {
       var tot = 0;
@@ -1559,6 +1846,8 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
     var snap = snapshot(s, ph.end, n, plan);
     snap.visible = { meaningful: measured, sentiment: lv('listen') > 0 };
+    // Where each condition stood when the phase began, after any event, so the pulse check compares like with like.
+    snap.start = c0;
     s.history.push(snap);
 
     s.pending = [];
@@ -1598,7 +1887,7 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     if (opt.cost > s.credits + 1e-9) throw new Error('You don\'t have enough credits for that option.');
     s.credits -= opt.cost;
     s.eventCredits += opt.cost;
-    var c = s.cond, fx = {};
+    var c = s.cond, fx = {}, soft = null;
     function add(k, v) { c[k] = clamp(c[k] + v, 0, 100); fx[k] = (fx[k] || 0) + v; }
     if (id === 'union') {
       if (optId === 'negotiate') { add('coh', 3); add('conv', 1); }
@@ -1607,6 +1896,7 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     }
     if (id === 'headline') {
       var m = Math.min(1, (cum(s, 'guardrails', 2) / 3) * 0.7 + (c.conv >= 55 ? 0.3 : 0));
+      soft = m;
       add('conv', -10 * (1 - 0.7 * m));
       add('coh', -5 * (1 - 0.7 * m));
       if (optId === 'qa') { add('conv', 7); add('endo', 3); add('coh', 2); }
@@ -1616,13 +1906,14 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     if (id === 'win' && optId === 'amplify') { add('conv', 6); add('reinf', 3); s.winAmplified = true; }
     if (id === 'sponsor') {
       var cs = coalition(s);
+      soft = cs;
       s.sponsorHit = 12 * (1 - cs);
       add('endo', -12 * (1 - cs));
       add('conv', -3 * (1 - cs));
       if (optId === 'brief') add('endo', 6);
       if (optId === 'admin') { add('endo', 8); add('conv', 2); }
     }
-    s.events[id] = { option: optId, cost: opt.cost, fx: fx };
+    s.events[id] = { option: optId, cost: opt.cost, fx: fx, soft: soft };
     s.pending.forEach(function (p) { if (p.id === id) p.resolved = true; });
     var last = s.history[s.history.length - 1];
     last.afterEvents = copy(s.cond);
@@ -1631,10 +1922,13 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
   function enterNextPhase(s) {
     for (var i = 0; i < s.pending.length; i++) if (!s.pending[i].resolved) throw new Error('Choose a response to the event first.');
+    // What the player just decided, so the next planning screen can show how it played out.
+    var decided = s.pending.filter(function (p) { return !p.auto; }).map(function (p) { return p.id; });
     s.pending = [];
     if (s.phase >= 4) { s.stage = 'm18'; return; }
     s.phase += 1;
     s.notice = null;
+    s.recap = { events: decided, cr: null };
     if (s.phase === 4) {
       var frozen = Math.round(s.credits * 0.15);
       s.credits -= frozen;
@@ -1642,6 +1936,7 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       var hit = (s.cond.adapt >= 60 || lvl(s, 3, 'clearPlate') > 0) ? -2 : -5;
       s.cond.adapt = clamp(s.cond.adapt + hit, 0, 100);
       s.notice = { id: 'cr', frozen: frozen, adapt: hit };
+      s.recap.cr = s.notice;
     }
     s.stage = 'plan';
   }
@@ -1752,14 +2047,53 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     for (var k2 = 2; k2 <= 3; k2++) practiceTotal += (lvl(s, k2, 'labs') >= 2 ? 1 : 0) + lvl(s, k2, 'officehours') + lvl(s, k2, 'champions');
     if (flagPhases(s, 'toolOnly').length || (cum(s, 'elearning', 4) >= 2 && practiceTotal <= 1)) hits.toolOnly = 'Courses without practice on real cases';
     if (cum(s, 'impact', 2) === 0) hits.vagueImpact = 'No one said what changes for people\'s jobs before launch';
-    if (cum(s, 'dashboard', 3) === 0) hits.wrongMetrics = cum(s, 'dashboard', 4) === 0 ? 'You never measured meaningful use' : 'You measured only logins until Sustain';
+    // Flying blind through launch counts, even if measurement arrives later.
+    if (cum(s, 'dashboard', 2) === 0) {
+      hits.wrongMetrics = cum(s, 'dashboard', 4) === 0 ? 'You never measured meaningful use'
+        : 'You saw only logins through launch, and started measuring real use in ' + D.phases[cum(s, 'dashboard', 3) > 0 ? 2 : 3].name;
+    }
     var lateReinf = 0;
     for (var k3 = 3; k3 <= 4; k3++) REINFORCING.forEach(function (id) { lateReinf += lvl(s, k3, id); });
     if (lateReinf <= 3) hits.noReinforcement = 'Little reinforcement in Scale and Sustain';
     var ov = flagPhases(s, 'overloaded');
     if (ov.length) hits.overloaded = 'Workload went over capacity in ' + ov.map(function (k) { return D.phases[k - 1].name; }).join(' and ');
-    var patterns = D.patterns.map(function (p) { return { id: p.id, name: p.name, desc: p.desc, hit: !!hits[p.id], where: hits[p.id] || '' }; });
+    var patterns = D.patterns.map(function (p) { return { id: p.id, name: p.name, desc: p.desc, fix: p.fix || '', hit: !!hits[p.id], where: hits[p.id] || '' }; });
     var nHits = patterns.filter(function (p) { return p.hit; }).length;
+
+    // What built each condition across the whole run, strongest first.
+    var drivers = {};
+    COND.forEach(function (cid) {
+      var list = [];
+      for (var lid in s.contribCond) {
+        var v = s.contribCond[lid][cid] || 0;
+        if (v >= 2) list.push({ id: lid, v: v });
+      }
+      drivers[cid] = list.sort(function (x, y) { return y.v - x.v; }).slice(0, 3).map(function (x) { return x.id; });
+    });
+
+    // The strongest builders of the weakest condition, and how the player used each one.
+    var weakBuilders = buildersOf(weakest).slice(0, 6).map(function (l) {
+      return { id: l.id, name: l.name, levels: [1, 2, 3, 4].map(function (k) { return lvl(s, k, l.id); }) };
+    });
+
+    // The run as a story: what each phase cost, what it produced, and what happened next.
+    var story = [1, 2, 3, 4].map(function (k) {
+      var h = H.filter(function (x) { return x.phase === k; })[0];
+      return {
+        n: k, name: D.phases[k - 1].name, months: D.phases[k - 1].months, end: D.phases[k - 1].end,
+        spend: s.spend[k] || 0, load: s.loads[k] ? s.loads[k].label : '',
+        intent: (s.intents && s.intents[k]) || '',
+        coverage: h ? pct(h.coverage) : 0, used: h ? pct(h.used) : 0, val: h ? pct(h.val) : 0,
+        signals: s.signals[k] || [],
+        events: ['union', 'headline', 'win', 'sponsor'].filter(function (id) { return s.events[id] && D.events[id].after === k; })
+      };
+    });
+
+    var move18 = val18 - pct(m12.val);
+    // Within five points either way counts as "about the same".
+    var prediction = s.prediction
+      ? { said: s.prediction, actual: move18 > 5 ? 'more' : move18 < -5 ? 'fewer' : 'same', move: move18, from: pct(m12.val), to: val18 }
+      : null;
 
     var rows = Object.keys(s.contrib).map(function (id) {
       var cc = s.contribCond[id] || {}, top = null;
@@ -1790,6 +2124,8 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
     return {
       tier: tier, title: titles[tier], summary: summaries[tier], success: success,
+      slid: tier === 'slipped' ? (valSlid ? 'value' : 'use') : '',
+      drivers: drivers, weakBuilders: weakBuilders, story: story, prediction: prediction,
       val18: val18, used18: used18, logins18: pct(last.logins), val12: pct(m12.val),
       peakVal: pct(peak.val), peakMonth: peak.month, peakUsed: pct(peakUse.used), peakUsedMonth: peakUse.month,
       weakest: weakest, weakestName: name(weakest), minCond: minCond,
@@ -1813,6 +2149,7 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     availability: availability,
     cleanPlan: cleanPlan,
     planCost: planCost,
+    buildersOf: buildersOf,
     loadInfo: loadInfo,
     potentials: potentials,
     commitPhase: commitPhase,
@@ -1840,22 +2177,28 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   var S = window.SIM;
   var STORE = 'making-ai-stick-simulation-v1';
   var CAN_PRINT = !!(window.SIM_BUILD && window.SIM_BUILD.standalone);
+  var SMOOTH = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth';
+  var KEEP = ['view', 'back', 'game', 'draft', 'intent', 'choices', 'predict', 'reflection', 'attempts', 'recorded', 'lastRun', 'tipsSeen'];
   var app = document.getElementById('app');
   var topbar = document.getElementById('topbar');
   var ui = freshUi();
   var lastAnalysis = null;
+  var scrollBack = 0;
 
   function freshUi() {
     return {
-      view: 'welcome', game: null, draft: {}, confirm: false, choices: {},
-      reflection: { fix: '', pattern: '', move: '' }, attempts: [], recorded: false, resetAsk: false
+      view: 'welcome', back: 'welcome', helpFrom: '', game: null, draft: {}, intent: '', confirm: false, choices: {}, predict: '', focus: '',
+      reflection: { name: '', fix: '', pattern: '', move: '' }, attempts: [], recorded: false, resetAsk: false,
+      lastRun: null, tipsSeen: false
     };
   }
 
   /* ---------- storage ---------- */
 
   function persisted() {
-    return { view: ui.view, game: ui.game, draft: ui.draft, choices: ui.choices, reflection: ui.reflection, attempts: ui.attempts, recorded: ui.recorded };
+    var o = {};
+    KEEP.forEach(function (k) { o[k] = ui[k]; });
+    return o;
   }
   function save() {
     try { localStorage.setItem(STORE, JSON.stringify(persisted())); } catch (e) { /* storage blocked: the run still works */ }
@@ -1865,11 +2208,14 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   }
   function restore(obj) {
     if (!obj) return;
-    ['view', 'game', 'draft', 'choices', 'reflection', 'attempts', 'recorded'].forEach(function (k) {
-      if (obj[k] !== undefined && obj[k] !== null) ui[k] = obj[k];
-    });
+    KEEP.forEach(function (k) { if (obj[k] !== undefined && obj[k] !== null) ui[k] = obj[k]; });
+    var r = ui.reflection || {};
+    ui.reflection = { name: r.name || '', fix: r.fix || '', pattern: r.pattern || '', move: r.move || '' };
     if (ui.game && ui.game.v !== 1) ui.game = null;
-    if (ui.view !== 'welcome' && !ui.game) ui.view = 'welcome';
+    // Runs saved by the first version lack the newer fields.
+    if (ui.game) { ui.game.why = ui.game.why || {}; ui.game.intents = ui.game.intents || {}; }
+    if (['welcome', 'case', 'help', 'game'].indexOf(ui.view) < 0) ui.view = 'welcome';
+    if (ui.view === 'game' && !ui.game) ui.view = 'welcome';
   }
 
   /* ---------- helpers ---------- */
@@ -1881,17 +2227,38 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   }
   function pct(x) { return Math.round(x * 100); }
   function cname(id) { for (var i = 0; i < D.conditions.length; i++) if (D.conditions[i].id === id) return D.conditions[i].name; return id; }
-  function cdef(id) { for (var i = 0; i < D.conditions.length; i++) if (D.conditions[i].id === id) return D.conditions[i]; return null; }
   function phase(n) { return D.phases[n - 1]; }
   function healthChip(v) { var h = S.healthOf(v); return '<span class="chip h-' + h.key + '"><i class="dot"></i>' + h.label + '</span>'; }
   function stanceChip(st) { return '<span class="chip st-' + st.key + '"><i class="dot"></i>' + st.label + '</span>'; }
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
-  function moveName(id) { for (var i = 0; i < D.moves.length; i++) if (D.moves[i].id === id) return D.moves[i].name; return id; }
+  function creditsWord(n) { return n === 1 ? 'credit' : 'credits'; }
+  function phrase(k) { return D.leverTags[k] || D.reasons[k] || k; }
+  function listAnd(a) { return a.length < 3 ? a.join(' and ') : a.slice(0, -1).join(', ') + ', and ' + a[a.length - 1]; }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function optionOf(evId, optId) {
+    var o = D.events[evId].options;
+    for (var i = 0; i < o.length; i++) if (o[i].id === optId) return o[i];
+    return null;
+  }
+  function weakestOf(cond) {
+    var w = S.COND[0];
+    S.COND.forEach(function (id) { if (cond[id] < cond[w]) w = id; });
+    return w;
+  }
+  function buildsCond(l, cid) { return (l.effects[cid] || 0) >= 2; }
+  function hasAny(o) { for (var k in o) if (o[k]) return true; return false; }
 
   var ICON = {
     warn: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="#d03b3b" stroke-width="1.6"/><path d="M8 4.3v4.4" stroke="#d03b3b" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11.3" r="1.05" fill="#d03b3b"/></svg>',
     good: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="#1f9d48" stroke-width="1.6"/><path d="M4.9 8.2l2.1 2.1 4.1-4.5" fill="none" stroke="#1f9d48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     mark: '<svg width="24" height="20" viewBox="0 0 24 20" aria-hidden="true"><rect x="0" y="8" width="3" height="12" rx="1" fill="#1c5cab"/><rect x="4.2" y="4" width="3" height="16" rx="1" fill="#1c5cab"/><rect x="8.4" y="9" width="3" height="11" rx="1" fill="#1c5cab"/><rect x="12.6" y="2" width="3" height="18" rx="1" fill="#1c5cab"/><rect x="16.8" y="6" width="3" height="14" rx="1" fill="#1c5cab"/><rect x="21" y="0" width="3" height="20" rx="1" fill="#1c5cab"/></svg>'
+  };
+
+  var LOAD_NOTE = {
+    light: 'There is room to spare.',
+    manageable: 'Within what people can absorb.',
+    heavy: 'People can absorb this, but it will wear down Adaptive Capacity.',
+    over: 'This asks for more time than people have right now. Everything in this phase will land softer, and Conviction will take a hit. Dial something down, or clear the plate.'
   };
 
   function timeDemand(l) {
@@ -1902,16 +2269,23 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   }
   function builds(l) {
     return Object.keys(l.effects).filter(function (k) { return l.effects[k] >= 2; })
-      .sort(function (a, b) { return l.effects[b] - l.effects[a]; }).slice(0, 2).map(cname);
+      .sort(function (a, b) { return l.effects[b] - l.effects[a]; }).map(cname);
   }
   function measured(g, upTo) { return S.cum(g, 'dashboard', upTo) > 0; }
+  function prevLevel(g, id) { return g.phase > 1 ? S.lvl(g, g.phase - 1, id) : 0; }
+  function opensLater(l, n) { for (var k = n + 1; k <= 4; k++) if (S.available(l, k)) return true; return false; }
+  function isNewThisPhase(l, n) { return n > 1 && S.available(l, n) && !S.available(l, n - 1); }
 
   /* ---------- top bar and status ---------- */
 
   function renderTopbar() {
-    topbar.innerHTML = '<div class="wrap topbar-in"><div class="brand">' + ICON.mark +
-      '<span class="brand-name">' + esc(D.meta.course) + '</span><span class="brand-sub">Adoption simulation</span></div>' +
-      '<div class="facil">Facilitator: ' + esc(D.meta.facilitator) + '</div></div>';
+    var links = '';
+    if (ui.view === 'game') links += '<button type="button" class="toplink" data-action="case">Case brief</button>';
+    if (ui.view !== 'help') links += '<button type="button" class="toplink" data-action="help">How to play</button>';
+    topbar.className = 'topbar' + (ui.view === 'game' ? ' in-game' : '');
+    topbar.innerHTML ='<div class="wrap topbar-in"><button type="button" class="brand" data-action="home" title="Back to the start">' + ICON.mark +
+      '<span class="brand-name">' + esc(D.meta.course) + '</span><span class="brand-sub">Adoption simulation</span></button>' +
+      '<div class="topnav">' + links + '<span class="facil">Facilitator: ' + esc(D.meta.facilitator) + '</span></div></div>';
   }
 
   function stepper(g) {
@@ -1932,16 +2306,27 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     html += '<div class="credits"><span class="credits-num' + (left < 0 ? ' over' : '') + '">' + left + '</span>' +
       '<span class="credits-lab">' + (left < 0 ? '<b>credits over budget</b>' : 'credits left') + '<br>' +
       (planning ? '<b>' + cost + '</b> this phase' : 'of ' + D.budget) + '</span></div>';
-    if (planning) {
-      var li = S.loadInfo(g.cond.adapt, plan);
-      html += '<div class="gauge g-' + li.key + '" title="How much time this phase asks of caseworkers and supervisors, compared with what they can absorb right now.">' +
-        '<div class="gauge-top"><span>Workforce load</span><b>' + li.label + '</b></div>' +
-        '<div class="gauge-bar"><span></span><span></span><span></span><span></span></div></div>';
-      html += '<button class="btn btn-primary btn-sm" data-action="to-commit">Commit ' + esc(phase(g.phase).name) + '</button>';
-    }
-    return '<div class="wrap status-in">' + html + '</div>';
+    if (!planning) return '<div class="wrap status-in">' + html + '</div>';
+
+    var li = S.loadInfo(g.cond.adapt, plan);
+    html += '<button type="button" class="gauge g-' + li.key + '" data-jump="commit" title="How much of people\'s time this phase asks for, against what they can absorb. Select to see what it means for your plan.">' +
+      '<span class="gauge-top"><span>Workforce load</span><b>' + li.label + '</b></span>' +
+      '<span class="gauge-bar"><span></span><span></span><span></span><span></span></span></button>';
+    html += '<button class="btn btn-primary btn-sm" data-action="to-commit">Commit ' + esc(phase(g.phase).name) + '</button>';
+
+    var totals = {};
+    D.moves.forEach(function (m) { totals[m.id] = 0; });
+    for (var id in plan) totals[S.LEV[id].move] += S.LEV[id].cost * plan[id];
+    var chips = D.moves.map(function (m) {
+      return '<button type="button" class="mv-chip' + (totals[m.id] ? ' has' : '') + '" data-jump="sec-' + m.id + '">' + esc(m.name) + ' <b>' + totals[m.id] + '</b></button>';
+    }).join('') + '<button type="button" class="mv-chip review" data-jump="commit">Review</button>';
+    return '<div class="wrap status-in">' + html + '</div>' +
+      '<div class="wrap movenav" role="navigation" aria-label="Jump to a move. Numbers are credits this phase.">' + chips + '</div>';
   }
-  function statusBar() { return '<div class="status" id="status" role="region" aria-label="Simulation status">' + statusInner() + '</div>'; }
+  function statusBar() {
+    var planning = ui.game.stage === 'plan';
+    return '<div class="status' + (planning ? ' planning' : '') + '" id="status" role="region" aria-label="Simulation status">' + statusInner() + '</div>';
+  }
 
   /* ---------- welcome ---------- */
 
@@ -1956,13 +2341,15 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     } else if (inProgress) {
       var where = g.stage === 'plan' ? 'Resume ' + phase(g.phase).name : g.stage === 'pulse' ? 'Resume ' + phase(g.phase).name + ' pulse check' : 'Resume at month 18';
       acts = '<div class="actions"><button class="btn btn-primary" data-action="resume">' + esc(where) + '</button>' +
-        '<button class="btn btn-quiet" data-action="read-case">Reread the case</button>' +
+        '<button class="btn btn-quiet" data-action="case">Reread the case</button>' +
+        '<button class="btn btn-quiet" data-action="help">How to play</button>' +
         '<button class="btn btn-quiet" data-action="ask-reset">Start over</button></div>';
     } else if (finished) {
       acts = '<div class="actions"><button class="btn btn-primary" data-action="replay">Play again</button>' +
         '<button class="btn" data-action="resume">See your last debrief</button></div>';
     } else {
-      acts = '<div class="actions"><button class="btn btn-primary" data-action="read-case">Read the case</button></div>';
+      acts = '<div class="actions"><button class="btn btn-primary" data-action="case">Read the case</button>' +
+        '<button class="btn btn-quiet" data-action="help">How to play</button></div>';
     }
     var conds = D.conditions.map(function (c, i) {
       return '<div class="cond-item"><span class="cond-n">0' + (i + 1) + '</span><h3>' + esc(c.name) + '</h3><p>' + esc(c.question) + '</p></div>';
@@ -1988,19 +2375,71 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       '</section>' +
       '<section class="stack-lg">' +
         '<div class="section-head"><h2>How a round works</h2></div>' +
-        '<ol class="steps">' +
-          '<li><h3>Plan</h3><p>Set each lever from Off to Intensive. Higher settings cost more credits and take more of people\'s time.</p></li>' +
-          '<li><h3>Commit</h3><p>Lock the phase in. Like real life, you can\'t go back and change it.</p></li>' +
-          '<li><h3>Pulse check</h3><p>See what moved: adoption, the six conditions, and what people are saying.</p></li>' +
-          '<li><h3>Respond</h3><p>Something happens. Choose how to handle it, then plan the next phase.</p></li>' +
-        '</ol>' +
+        roundSteps() +
       '</section>' +
       '<section class="callout accent"><h3>What counts as success</h3><p>' + esc(D.case.success) + '</p></section>' +
       '<p class="muted small">Playing in a pod? Put one screen up, let one person drive, and argue about every slider.</p>' +
     '</main>';
   }
 
+  function roundSteps() {
+    return '<ol class="steps">' +
+      '<li><h3>Plan</h3><p>Set each lever from Off to Intensive. Higher settings cost more credits and take more of people\'s time.</p></li>' +
+      '<li><h3>Commit</h3><p>Lock the phase in. Like real life, you can\'t go back and change it.</p></li>' +
+      '<li><h3>Pulse check</h3><p>See what moved and why: adoption, the six conditions, and what people are saying.</p></li>' +
+      '<li><h3>Respond</h3><p>Something happens. Choose how to handle it, then plan the next phase.</p></li>' +
+    '</ol>';
+  }
+
+  /* ---------- how to play ---------- */
+
+  function defs(rows) {
+    return '<dl class="defs">' + rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + r[1] + '</dd></div>'; }).join('') + '</dl>';
+  }
+
+  function helpScreen() {
+    var backLabel = ui.helpFrom === 'case' ? 'Back to the case' : ui.back === 'game' ? 'Back to the simulation' : 'Back';
+    return '<main class="wrap screen">' +
+      '<div class="phase-head"><p class="eyebrow">How to play</p><h1 class="title" tabindex="-1">Four rounds, then the test</h1>' +
+        '<p class="lead">Each round you plan a phase, lock it in, read the pulse check, and respond to an event. At month 18, six months after the program office closes, you find out whether adoption stuck.</p>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="back">' + backLabel + '</button></div></div>' +
+      '<section class="stack-lg"><div class="section-head"><h2>A round</h2></div>' + roundSteps() + '</section>' +
+      '<section class="stack"><div class="section-head"><h2>Six things to know</h2></div><ol class="tips-list">' +
+        D.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol></section>' +
+      '<section class="stack"><div class="section-head"><h2>Reading the planning screen</h2></div>' + defs([
+        ['Credits left', 'What you can still spend this year. Credits you don\'t spend carry forward.'],
+        ['Workforce load', 'How much of people\'s time the phase asks for, against what they can absorb. Light and Manageable are safe. Heavy wears down Adaptive Capacity. Overloaded makes everything land softer.'],
+        ['Builds', 'The conditions a lever strengthens most.'],
+        ['Time demand', 'How much of people\'s time a lever takes at each level.'],
+        ['Last phase', 'A dot under a slider label marks the level you ran last phase, so you can dial up or down from it.'],
+        ['Where things stand', 'Select a condition to show only the levers that build it. Select it again to show them all.']
+      ]) + '</section>' +
+      '<section class="stack"><div class="section-head"><h2>Reading the pulse check</h2></div>' + defs([
+        ['Deployed, Used, Valuable', 'The adoption gap. Deployed means people have the tool. Used means they ran it on a case in the last two weeks. Valuable means their drafts are used on real cases and approved. Only Valuable counts toward the goal.'],
+        ['Watchlist', 'Logins and course completions. Easy to collect, and they tell you almost nothing.'],
+        ['Strong, Steady, Fragile, At risk', 'How each condition is holding. A condition at risk is probably holding adoption back.'],
+        ['The people', 'Where each group stands on the influence and resistance map. Their stance moves with what you do.']
+      ]) + '</section>' +
+      '<div class="actions"><button class="btn btn-primary" data-action="back">' + backLabel + '</button></div>' +
+    '</main>';
+  }
+
   /* ---------- case ---------- */
+
+  // One line on why a condition moved in a phase, led by whatever matches the arrow shown beside it.
+  function whyLine(w) {
+    if (!w) return '';
+    var rose = w.net >= 1.5, fell = w.net <= -1.5;
+    // Everything fades a little, so fading is only worth naming when the condition didn't rise.
+    var ups = listAnd((w.up || []).map(phrase));
+    var downs = listAnd((w.down || []).filter(function (k) { return k !== 'fade' || !rose; }).map(phrase));
+    if (rose) return (ups ? 'Lifted by ' + ups + '.' : 'It recovered a little on its own.') + (downs ? ' Held back by ' + downs + '.' : '');
+    if (fell) return (downs ? 'Pulled down by ' + downs + '.' : 'It faded faster than this phase built it.') + (ups ? ' ' + cap(ups) + ' helped, but not enough.' : '');
+    if (ups && downs) return 'Lifted by ' + ups + ', but pulled back by ' + downs + '.';
+    if (ups) return 'Lifted a little by ' + ups + ', but it faded about as fast.';
+    if (downs) return 'Pulled down a little by ' + downs + '.';
+    return 'Nothing in this phase moved it.';
+  }
 
   function healthRows(cond, opts) {
     opts = opts || {};
@@ -2013,10 +2452,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         delta = d >= 1.5 ? '<span class="delta up">↑ Up</span>' : d <= -1.5 ? '<span class="delta down">↓ Down</span>' : '<span class="delta flat">Flat</span>';
       }
       var sub = opts.notes ? esc(D.startNotes[c.id]) : esc(c.question);
+      var why = opts.why ? whyLine(opts.why[c.id]) : '';
       return '<div class="health-row"><div><div class="hn">' + esc(c.name) + '</div><div class="hq">' + sub + '</div></div>' +
         '<div class="track" aria-hidden="true"><span class="riskline" style="left:' + D.riskLine + '%"></span><span class="fill" style="width:' + Math.max(1, Math.round(v)) + '%"></span>' +
         (prev !== null && prev !== undefined ? '<span class="ghost" style="left:' + Math.round(prev) + '%"></span>' : '') + '</div>' +
-        '<div class="health-right">' + delta + healthChip(v) + '</div></div>';
+        '<div class="health-right">' + delta + healthChip(v) + '</div>' +
+        (why ? '<div class="cond-why">' + esc(why) + '</div>' : '') + '</div>';
     }).join('') + '</div>';
   }
 
@@ -2029,16 +2470,18 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     })).join('');
     var tl = D.phases.map(function (p) { return '<li><span>' + esc(p.months) + '</span><span><b>' + esc(p.name) + '.</b> ' + esc(p.live) + '</span></li>'; }).join('') +
       '<li><span>Month 18</span><span><b>The test.</b> Six months after the program office closes.</span></li>';
-    var started = g && (g.stage !== 'plan' || g.phase > 1);
-    var cta = started
-      ? '<button class="btn btn-primary" data-action="resume">Back to the simulation</button>'
-      : '<button class="btn btn-primary" data-action="begin">Start Phase 1: Prepare</button>';
+    var finished = g && g.stage === 'debrief';
+    var cta = !g ? '<button class="btn btn-primary" data-action="begin">Start Phase 1: Prepare</button>'
+      : finished ? '<button class="btn btn-primary" data-action="resume">Back to your debrief</button><button class="btn" data-action="replay">Play again</button>'
+      : '<button class="btn btn-primary" data-action="resume">Back to the simulation</button>';
     var startConds = {};
     D.conditions.forEach(function (c) { startConds[c.id] = c.start; });
     return '<main class="wrap screen">' +
       '<div class="case-grid">' +
         '<div class="stack-lg">' +
-          '<div class="stack"><p class="eyebrow">The case</p><h1 class="title" tabindex="-1">' + esc(C.agency) + '</h1><p class="muted">A fictional agency, built from patterns you may recognize.</p></div>' +
+          '<div class="stack"><p class="eyebrow">The case</p><h1 class="title" tabindex="-1">' + esc(C.agency) + '</h1><p class="muted">A fictional agency, built from patterns you may recognize.</p>' +
+            (g ? '<div class="actions">' + cta + '</div>' : '') + '</div>' +
+          '<div class="callout"><h3>In short</h3><ul class="short-list">' + C.short.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' +
           '<div class="case-block"><h2>Your role</h2><p class="read">' + esc(C.role) + '</p></div>' +
           '<div class="case-block"><h2>The agency</h2><p class="read">' + esc(C.agencyText) + '</p></div>' +
           '<div class="case-block"><h2>The change</h2><p class="read">' + esc(C.change) + '</p><p class="gap-line">' + esc(C.gap) + '</p></div>' +
@@ -2060,60 +2503,88 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
   /* ---------- plan ---------- */
 
-  function leverCard(l, n) {
-    var lv = ui.draft[l.id] || 0, av = S.availability(l, n);
+  function unitText(l, lv) { return creditsWord(l.cost * lv) + ' · ' + l.cost + ' per level'; }
+  function refText(prev, lv) {
+    if (!prev) return '';
+    var was = D.levelNames[prev];
+    if (lv === prev) return 'Same as last phase.';
+    if (lv === 0) return 'Last phase: ' + was + '. Off for now.';
+    return (lv > prev ? 'Dialed up from ' : 'Dialed down from ') + was + '.';
+  }
+  function tickClass(i, lv, prev) { return (i === lv ? 'sel' : '') + (prev && i === prev ? ' was' : ''); }
+
+  function leverCard(l, g) {
+    var n = g.phase, lv = ui.draft[l.id] || 0, av = S.availability(l, n), prev = prevLevel(g, l.id);
     var tags = builds(l).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
     return '<article class="lever' + (lv ? ' on' : ' off-now') + '" id="card-' + l.id + '">' +
-      '<div class="lever-top"><h3>' + esc(l.name) + '</h3><div class="lever-cost"><span class="cn" id="cost-' + l.id + '">' + (l.cost * lv) + '</span><span class="cu" id="unit-' + l.id + '">' + unitText(l, lv) + '</span></div></div>' +
+      '<div class="lever-top"><h3>' + esc(l.name) + (isNewThisPhase(l, n) ? ' <span class="tag new">New this phase</span>' : '') + '</h3>' +
+        '<div class="lever-cost"><span class="cn" id="cost-' + l.id + '">' + (l.cost * lv) + '</span><span class="cu" id="unit-' + l.id + '">' + unitText(l, lv) + '</span></div></div>' +
       '<p class="lever-short">' + esc(l.short) + '</p>' +
-      '<div class="lever-meta"><span>Builds</span>' + tags + '<span class="sep"></span><span>Time demand: ' + timeDemand(l) + '</span></div>' +
+      '<div class="lever-meta"><span>Builds</span>' + tags + '<span class="lm-time">Time demand: ' + timeDemand(l) + '</span></div>' +
       (l.extra ? '<p class="lever-short">' + esc(l.extra) + '</p>' : '') +
       '<div class="slider"><input type="range" min="0" max="3" step="1" value="' + lv + '" data-lever="' + l.id + '" id="sl-' + l.id + '" class="' + (lv ? '' : 'zero') + '" style="--fill:' + (lv / 3 * 100) + '%" aria-label="' + esc(l.name) + ' level" aria-valuetext="' + esc(D.levelNames[lv] + ': ' + l.levels[lv]) + '">' +
-      '<div class="ticks" aria-hidden="true">' + D.levelNames.map(function (nm, i) { return '<button type="button" tabindex="-1" data-set="' + i + '" data-for="' + l.id + '" class="' + (i === lv ? 'sel' : '') + '">' + nm + '</button>'; }).join('') + '</div></div>' +
+      '<div class="ticks" aria-hidden="true">' + D.levelNames.map(function (nm, i) {
+        return '<button type="button" tabindex="-1" data-set="' + i + '" data-for="' + l.id + '" class="' + tickClass(i, lv, prev) + '"' + (prev && i === prev ? ' title="Last phase"' : '') + '>' + nm + '</button>';
+      }).join('') + '</div></div>' +
       '<p class="lever-level" id="desc-' + l.id + '"><b>' + D.levelNames[lv] + '.</b> ' + esc(l.levels[lv]) + '</p>' +
+      '<p class="lever-ref" id="ref-' + l.id + '">' + esc(refText(prev, lv)) + '</p>' +
       (av.note ? '<p class="lever-note">' + esc(av.note) + '</p>' : '') +
     '</article>';
   }
 
-  function creditsWord(n) { return n === 1 ? 'credit' : 'credits'; }
-  function unitText(l, lv) { return creditsWord(l.cost * lv) + ' · ' + l.cost + ' per level'; }
-
   function updateLever(id) {
-    var l = S.LEV[id], lv = ui.draft[id] || 0;
+    var g = ui.game, l = S.LEV[id], lv = ui.draft[id] || 0, prev = prevLevel(g, id);
     var card = document.getElementById('card-' + id);
     if (!card) return;
     card.className = 'lever' + (lv ? ' on' : ' off-now');
     document.getElementById('cost-' + id).textContent = l.cost * lv;
     document.getElementById('unit-' + id).textContent = unitText(l, lv);
     document.getElementById('desc-' + id).innerHTML = '<b>' + D.levelNames[lv] + '.</b> ' + esc(l.levels[lv]);
+    var ref = document.getElementById('ref-' + id);
+    if (ref) ref.textContent = refText(prev, lv);
     var sl = document.getElementById('sl-' + id);
     sl.value = lv;
     sl.className = lv ? '' : 'zero';
     sl.style.setProperty('--fill', (lv / 3 * 100) + '%');
     sl.setAttribute('aria-valuetext', D.levelNames[lv] + ': ' + l.levels[lv]);
     var ticks = card.querySelectorAll('.ticks button');
-    for (var i = 0; i < ticks.length; i++) ticks[i].className = i === lv ? 'sel' : '';
+    for (var i = 0; i < ticks.length; i++) ticks[i].className = tickClass(i, lv, prev);
   }
 
   function commitInner() {
     var g = ui.game, n = g.phase;
     var plan = S.cleanPlan(ui.draft, n), cost = S.planCost(plan), left = g.credits - cost;
-    var li = S.loadInfo(g.cond.adapt, plan), count = Object.keys(plan).length;
+    var li = S.loadInfo(g.cond.adapt, plan);
+    var picked = D.levers.filter(function (l) { return plan[l.id]; }), count = picked.length;
     var after = n < 4
-      ? 'After this phase you\'ll have <b>' + left + ' credits</b> for ' + plural(4 - n, 'more phase', 'more phases') + '.'
-      : 'You\'ll finish with <b>' + left + ' credits</b> unspent.';
-    var sum = '<p class="commit-sum">This phase: <b>' + plural(count, 'activity', 'activities') + '</b>, <b>' + cost + ' credits</b>, workforce load <b>' + li.label + '</b>. ' + after + '</p>';
-    if (li.extra > 0) sum += '<p class="commit-sum">You\'re running ' + count + ' activities at once. Past ' + D.model.focusLimit + ', the message starts to blur.</p>';
+      ? 'After this phase you\'ll have <b>' + left + ' ' + creditsWord(left) + '</b> for ' + plural(4 - n, 'more phase', 'more phases') + '.'
+      : 'You\'ll finish with <b>' + left + ' ' + creditsWord(left) + '</b> unspent.';
+    var sum = '<p class="commit-sum">This phase: <b>' + plural(count, 'activity', 'activities') + '</b> for <b>' + cost + ' ' + creditsWord(cost) + '</b>. ' + after + '</p>';
+    sum += '<p class="commit-sum' + (li.key === 'over' ? ' bad' : li.key === 'heavy' ? ' caution' : '') + '"><b>Workforce load: ' + li.label + '.</b> ' + LOAD_NOTE[li.key] + '</p>';
+    if (li.extra > 0) sum += '<p class="commit-sum caution"><b>' + count + ' activities at once.</b> Past ' + D.model.focusLimit + ', the message starts to blur and each one lands a little softer.</p>';
+
+    var picks = count
+      ? '<ul class="picks">' + picked.map(function (l) {
+          return '<li><span>' + esc(l.name) + '</span><span class="pk">' + D.levelNames[plan[l.id]] + ' · ' + (l.cost * plan[l.id]) + '</span></li>';
+        }).join('') + '</ul>'
+      : '<p class="commit-sum">Nothing selected yet. Every slider is at Off.</p>';
+    var stopped = n > 1 ? D.levers.filter(function (l) { return S.available(l, n) && S.lvl(g, n - 1, l.id) > 0 && !plan[l.id]; }) : [];
+    var stopLine = stopped.length
+      ? '<p class="commit-sum"><b>Not continuing from last phase:</b> ' + esc(listAnd(stopped.map(function (l) { return phrase(l.id); }))) + '. That\'s fine if you mean it.</p>'
+      : '';
+    var intent = '<div class="field"><label for="intent">In one line, what is this phase meant to achieve? <span class="opt">Optional. It comes back in your debrief.</span></label>' +
+      '<input type="text" id="intent" data-intent="1" maxlength="140" autocomplete="off" value="' + esc(ui.intent) + '" placeholder="Get section chiefs ready to carry the message before launch."></div>';
+
     var btns;
     if (left < 0) {
-      btns = '<p class="err">You\'re ' + (-left) + ' credits over budget. Dial something down before you commit.</p>';
+      btns = '<p class="err">You\'re ' + (-left) + ' ' + creditsWord(-left) + ' over budget. Dial something down before you commit.</p>';
     } else if (ui.confirm) {
       btns = '<p class="commit-sum"><b>Lock in ' + esc(phase(n).name) + '?</b> Once it\'s committed, you can\'t change it.' + (count === 0 ? ' You haven\'t chosen any activities for this phase.' : '') + '</p>' +
         '<div class="actions"><button class="btn btn-primary" data-action="confirm-commit">Lock it in</button><button class="btn" data-action="cancel-commit">Keep editing</button></div>';
     } else {
       btns = '<div class="actions"><button class="btn btn-primary" data-action="commit">Commit ' + esc(phase(n).name) + '</button></div>';
     }
-    return '<h2>Ready to commit?</h2>' + sum + btns;
+    return '<h2>Review and commit</h2>' + sum + picks + stopLine + intent + btns;
   }
 
   function updateStatus() {
@@ -2123,10 +2594,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     if (cm) cm.innerHTML = commitInner();
   }
 
-  function standing(g) {
-    var n = g.phase, last = g.history[g.history.length - 1];
+  function standingInner(g) {
+    var n = g.phase, last = g.history[g.history.length - 1], weakest = weakestOf(g.cond);
     var mini = D.conditions.map(function (c) {
-      return '<div class="mini-cond"><b>' + esc(c.name) + '</b>' + healthChip(g.cond[c.id]) + '</div>';
+      var on = ui.focus === c.id;
+      return '<button type="button" class="mini-cond' + (on ? ' on' : '') + '" data-focus="' + c.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+        '<b>' + esc(c.name) + '</b><span class="mc-row">' + healthChip(g.cond[c.id]) + (c.id === weakest ? '<span class="tag">Weakest</span>' : '') + '</span></button>';
     }).join('');
     var metrics = '';
     if (n >= 2 && last.coverage > 0) {
@@ -2134,7 +2607,17 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       metrics = '<p>Month ' + last.month + ': ' + pct(last.coverage) + '% deployed · active use ' + (see ? pct(last.used) + '%' : 'not measured') +
         ' · meaningful use ' + (see ? pct(last.val) + '%' : 'not measured') + ' · logins ' + pct(last.logins) + '%</p>';
     }
-    return '<section class="standing"><div class="standing-top"><h2>Where things stand</h2>' + metrics + '</div><div class="mini-conds">' + mini + '</div></section>';
+    return '<div class="standing-top"><h2>Where things stand</h2>' + metrics + '</div><div class="mini-conds">' + mini + '</div>' +
+      '<p class="muted small">Adoption follows the weakest condition. Select a condition to see only the levers that build it.</p>';
+  }
+
+  function quickStart(g) {
+    var n = g.phase, btns = '';
+    if (n > 1 && hasAny(S.cleanPlan(g.plans[n - 1], n))) btns += '<button class="btn btn-sm" data-action="copy-last">Start from last phase\'s settings</button>';
+    if (ui.lastRun && ui.lastRun.plans && hasAny(S.cleanPlan(ui.lastRun.plans[n], n))) btns += '<button class="btn btn-sm" data-action="copy-run">Start from my last run\'s ' + esc(phase(n).name) + ' plan</button>';
+    if (!btns) return '';
+    return '<section class="quick"><p><b>Quick start.</b> Every slider begins at Off. Load a starting point, then dial each lever up or down.</p>' +
+      '<div class="actions">' + btns + '<button class="btn btn-quiet btn-sm" data-action="clear-plan">Set everything to Off</button></div></section>';
   }
 
   function roadmap(g) {
@@ -2142,27 +2625,100 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     return '<details class="roadmap"><summary>Your plan so far</summary>' + heatTable(g, g.phase - 1) + '</details>';
   }
 
-  function planScreen() {
-    var g = ui.game, n = g.phase, ph = phase(n);
-    var notice = '';
-    if (g.notice && g.notice.id === 'cr' && n === 4) {
-      notice = '<section class="notice"><p class="eyebrow">Event</p><h2>' + esc(D.events.cr.title) + '</h2><p>' + esc(D.events.cr.text) + '</p>' +
-        '<p><b>' + g.notice.frozen + ' credits were frozen.</b> The recertification also costs people time, so Adaptive Capacity took a hit.</p></section>';
+  function leversInner(g) {
+    var n = g.phase, f = ui.focus, banner = '';
+    if (f) {
+      var count = D.levers.filter(function (l) { return S.available(l, n) && buildsCond(l, f); }).length;
+      var later = D.levers.filter(function (l) { return buildsCond(l, f) && !S.available(l, n) && opensLater(l, n); }).length;
+      var showing = count === 0 ? 'No lever that builds ' + esc(cname(f)) + ' is open in this phase.'
+        : 'Showing ' + (count === 1 ? 'the 1 lever that builds ' : 'the ' + count + ' levers that build ') + esc(cname(f)) + '.';
+      banner = '<div class="filter-bar" role="status"><p><b>' + showing + '</b> ' +
+        (later ? (later === 1 ? '1 more opens' : later + ' more open') + ' in later phases. ' : '') +
+        (f === 'adapt' ? esc(D.adaptNote) : 'Your other settings are still in place.') + '</p>' +
+        '<button type="button" class="btn btn-sm" data-focus="">Show all levers</button></div>';
     }
     var moves = D.moves.map(function (m) {
-      var open = D.levers.filter(function (l) { return l.move === m.id && S.available(l, n); });
-      var closed = D.levers.filter(function (l) { return l.move === m.id && !S.available(l, n); });
-      return '<section class="move" aria-labelledby="mv-' + m.id + '"><div class="move-head"><h2 id="mv-' + m.id + '">' + esc(m.name) + '</h2><p>' + esc(m.purpose) + '</p></div>' +
-        (open.length ? '<div class="lever-grid">' + open.map(function (l) { return leverCard(l, n); }).join('') + '</div>' : '<p class="closed">Nothing in this move is available in this phase.</p>') +
+      var all = D.levers.filter(function (l) { return l.move === m.id; });
+      var open = all.filter(function (l) { return S.available(l, n) && (!f || buildsCond(l, f)); });
+      var closed = f ? [] : all.filter(function (l) { return !S.available(l, n); });
+      if (f && !open.length) return '';
+      return '<section class="move" id="sec-' + m.id + '" aria-labelledby="mv-' + m.id + '"><div class="move-head"><h2 id="mv-' + m.id + '">' + esc(m.name) + '</h2><p>' + esc(m.purpose) + '</p></div>' +
+        (open.length ? '<div class="lever-grid">' + open.map(function (l) { return leverCard(l, g); }).join('') + '</div>' : '<p class="closed">Nothing in this move is available in this phase.</p>') +
         (closed.length ? '<p class="closed">Not available now: ' + closed.map(function (l) { return esc(l.name) + ' <em>(' + esc(S.availability(l, n).note) + ')</em>'; }).join(' · ') + '</p>' : '') +
       '</section>';
     }).join('');
+    return banner + moves;
+  }
+
+  function fxChips(fx) {
+    if (!fx) return '';
+    var out = S.COND.filter(function (id) { return Math.abs(fx[id] || 0) >= 1; }).map(function (id) {
+      var up = fx[id] > 0;
+      return '<span class="fx ' + (up ? 'up' : 'down') + '">' + esc(cname(id)) + ' ' + (up ? '↑' : '↓') + '</span>';
+    }).join('');
+    return out ? '<div class="fx-row">' + out + '</div>' : '';
+  }
+
+  function softText(id, e) {
+    var texts = D.events[id].soft, v = e.soft;
+    if (!texts || v === null || v === undefined) return '';
+    return texts[v >= 0.6 ? 2 : v >= 0.2 ? 1 : 0];
+  }
+
+  function outcomeCard(g, id) {
+    var e = g.events[id], ev = D.events[id];
+    if (!e || !ev || !ev.outcomes || !ev.outcomes[e.option]) return '';
+    var o = optionOf(id, e.option), soft = softText(id, e);
+    return '<div class="notice info"><p class="eyebrow">What happened next</p><h2>' + esc(ev.title) + '</h2>' +
+      (soft ? '<p>' + esc(soft) + '</p>' : '') +
+      '<p><b>You chose: ' + esc(o.label) + '.</b> ' + esc(ev.outcomes[e.option]) + '</p>' + fxChips(e.fx) + '</div>';
+  }
+
+  function crCard(cr) {
+    return '<div class="notice"><p class="eyebrow">Event</p><h2>' + esc(D.events.cr.title) + '</h2><p>' + esc(D.events.cr.text) + '</p>' +
+      '<p><b>' + cr.frozen + ' ' + creditsWord(cr.frozen) + ' ' + (cr.frozen === 1 ? 'was' : 'were') + ' frozen.</b> The recertification also costs people time.</p>' +
+      fxChips({ adapt: cr.adapt }) + '</div>';
+  }
+
+  function recapHtml(g) {
+    var r = g.recap, out = '';
+    if (r && r.events) r.events.forEach(function (id) { out += outcomeCard(g, id); });
+    var cr = (r && r.cr) || (g.notice && g.notice.id === 'cr' ? g.notice : null);
+    if (cr && g.phase === 4) out += crCard(cr);
+    return out ? '<section class="stack" aria-label="What happened since the pulse check">' + out + '</section>' : '';
+  }
+
+  function tipsPanel(g) {
+    if (g.phase !== 1 || ui.tipsSeen) return '';
+    return '<section class="callout tips" id="tips"><h2>Six things to know before your first move</h2><ol class="tips-list">' +
+      D.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' +
+      '<div class="actions"><button class="btn btn-sm" data-action="tips-done">Got it</button><span class="muted small">You can reread these any time under How to play.</span></div></section>';
+  }
+
+  function planScreen() {
+    var g = ui.game, n = g.phase, ph = phase(n);
+    var live = (n === 2 && g.delay) ? 'Two pilot centers, then two more by month 5. About 40% of caseworkers, because the pilot started late.' : ph.live;
+    var fresh = D.levers.filter(function (l) { return isNewThisPhase(l, n); });
     return statusBar() + '<main class="wrap screen">' +
       '<div class="phase-head"><p class="eyebrow">Phase ' + n + ' of 4 · ' + esc(ph.months) + '</p><h1 class="title" tabindex="-1">' + esc(ph.name) + '</h1>' +
-      '<p class="lead">' + esc(ph.intro) + '</p><p class="live"><b>Live now:</b> ' + esc(ph.live) + '</p></div>' +
-      notice + standing(g) + roadmap(g) + moves +
+      '<p class="lead">' + esc(ph.intro) + '</p><p class="live"><b>Live now:</b> ' + esc(live) + '</p>' +
+      (fresh.length ? '<p class="live"><b>New this phase:</b> ' + esc(listAnd(fresh.map(function (l) { return phrase(l.id); }))) + '.</p>' : '') + '</div>' +
+      recapHtml(g) + tipsPanel(g) +
+      '<section class="standing" id="stand">' + standingInner(g) + '</section>' +
+      quickStart(g) + roadmap(g) +
+      '<div class="levers" id="levers">' + leversInner(g) + '</div>' +
       '<section class="commit" id="commit">' + commitInner() + '</section>' +
     '</main>';
+  }
+
+  function refreshPlan() {
+    var g = ui.game;
+    var st = document.getElementById('stand');
+    if (st) st.innerHTML = standingInner(g);
+    var lv = document.getElementById('levers');
+    if (lv) lv.innerHTML = leversInner(g);
+    updateStatus();
+    save();
   }
 
   /* ---------- pulse ---------- */
@@ -2173,19 +2729,20 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   }
 
   function tile(label, value, sub, cls, tag) {
-    return '<div class="tile ' + (cls || '') + '"><div class="tl"><span>' + label + '</span>' + (tag ? '<span class="watch-tag">' + tag + '</span>' : '') + '</div><div class="tv num">' + value + '</div><div class="ts">' + sub + '</div></div>';
+    // The tag line is always present, so values line up across tiles with and without a tag.
+    return '<div class="tile ' + (cls || '') + '"><div class="tl"><span class="watch-tag">' + (tag || '&nbsp;') + '</span><span>' + label + '</span></div><div class="tv num">' + value + '</div><div class="ts">' + sub + '</div></div>';
   }
 
   function eventCard(p) {
     var ev = D.events[p.id], g = ui.game;
     if (p.auto) {
-      return '<section class="event done"><p class="eyebrow">Event</p><h2>' + esc(ev.resolvedTitle) + '</h2><p class="event-text">' + esc(ev.resolvedText) + '</p></section>';
+      return '<section class="event done"><p class="eyebrow">Event</p><h2>' + esc(ev.resolvedTitle) + '</h2><p class="event-text">' + esc(ev.resolvedText) + '</p>' + fxChips(g.events[p.id] && g.events[p.id].fx) + '</section>';
     }
     var chosen = ui.choices[p.id];
     var others = 0;
     g.pending.forEach(function (q) {
       if (q.id !== p.id && !q.resolved && ui.choices[q.id]) {
-        var o = D.events[q.id].options.filter(function (x) { return x.id === ui.choices[q.id]; })[0];
+        var o = optionOf(q.id, ui.choices[q.id]);
         if (o) others += o.cost;
       }
     });
@@ -2198,7 +2755,17 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         '<span class="ol">' + esc(o.label) + '</span><span class="od">' + esc(o.detail) + '</span></label>';
     }).join('');
     return '<section class="event" id="ev-' + p.id + '"><p class="eyebrow">Event</p><h2>' + esc(ev.title) + '</h2><p class="event-text">' + esc(ev.text) + '</p>' +
-      '<fieldset style="border:0;margin:0;padding:0"><legend class="muted small" style="margin-bottom:8px">How do you respond?</legend><div class="options">' + opts + '</div></fieldset></section>';
+      '<fieldset class="plain"><legend>How do you respond?</legend><div class="options">' + opts + '</div></fieldset></section>';
+  }
+
+  function predictCard() {
+    var opts = D.predict.options.map(function (o) {
+      var sel = ui.predict === o.id;
+      return '<label class="option' + (sel ? ' sel' : '') + '"><input type="radio" name="predict" value="' + o.id + '"' + (sel ? ' checked' : '') + ' data-predict="1">' +
+        '<span class="ol">' + esc(o.label) + '</span></label>';
+    }).join('');
+    return '<section class="event" id="predict"><p class="eyebrow">Before you fast-forward</p><h2>Make a prediction</h2><p class="event-text">' + esc(D.prompts[4]) + '</p>' +
+      '<fieldset class="plain"><legend>' + esc(D.predict.question) + '</legend><div class="options">' + opts + '</div></fieldset></section>';
   }
 
   function pulseScreen() {
@@ -2206,17 +2773,19 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     var snap = g.history[g.history.length - 1], prev = g.history[g.history.length - 2];
     var see = snap.visible && snap.visible.meaningful;
     var tiles = tile('Deployed', pct(snap.coverage) + '%', 'of caseworkers have the tool');
-    tiles += see ? tile('Active use', pct(snap.used) + '%', 'used it on a case in the last two weeks')
-      : tile('Active use', 'Not measured', 'Fund the early-warning dashboard to see it', 'fogged');
-    tiles += see ? tile('Meaningful use', pct(snap.val) + '%', 'drafts used on real cases and approved')
-      : tile('Meaningful use', 'Not measured', 'Fund the early-warning dashboard to see it', 'fogged');
+    tiles += see ? tile('Active use', pct(snap.used) + '%', 'used it on a case in the last two weeks', '', 'Used')
+      : tile('Active use', 'Not measured', 'Fund the early-warning dashboard to see it', 'fogged', 'Used');
+    tiles += see ? tile('Meaningful use', pct(snap.val) + '%', 'drafts used on real cases and approved. The goal is ' + D.successRate + '%.', 'key', 'Valuable')
+      : tile('Meaningful use', 'Not measured', 'Fund the early-warning dashboard to see it', 'fogged', 'Valuable');
     tiles += tile('Logins', pct(snap.logins) + '%', 'logged in this month', 'watch', 'Watchlist');
     tiles += tile('Course completions', pct(snap.training) + '%', 'finished assigned training', 'watch', 'Watchlist');
     var sentTile = (snap.visible && snap.visible.sentiment) ? tile('Sentiment pulse', '<span style="font-size:20px">' + sentiment(snap.cond) + '</span>', 'from this phase\'s pulse surveys') : '';
     tiles += sentTile;
-    var fogNote = see ? '' : '<p class="muted small">You can see logins and course completions. You can\'t yet see whether drafts are being used on real cases.</p>';
+    var gapNote = see
+      ? '<p class="muted small">The adoption gap runs from Deployed to Used to Valuable. Only Valuable counts toward the goal.</p>'
+      : '<p class="muted small">You can see logins and course completions. You can\'t yet see whether drafts are being used on real cases.</p>';
     var adoption = snap.coverage > 0
-      ? '<section class="stack"><h2>Adoption</h2><div class="tiles">' + tiles + '</div>' + fogNote + '</section>'
+      ? '<section class="stack"><h2>Adoption</h2><div class="tiles">' + tiles + '</div>' + gapNote + '</section>'
       : '<section class="stack"><h2>Adoption</h2><p class="muted">Nothing is live yet. The two pilot centers switch on in month 3.</p>' + (sentTile ? '<div class="tiles">' + sentTile + '</div>' : '') + '</section>';
 
     var people = D.personas.map(function (p) {
@@ -2233,20 +2802,24 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       return '<li>' + (s.tone === 'good' ? ICON.good : ICON.warn) + '<span>' + esc(s.text) + '</span></li>';
     }).join('');
 
-    var events = g.pending.map(eventCard).join('');
+    var prompt = n < 4
+      ? '<section class="prompt"><p class="eyebrow">Pause and discuss</p><p class="prompt-q">' + esc(D.prompts[n]) + '</p>' +
+        '<p class="muted small">Playing in a pod? Give this two minutes before you plan the next phase.</p></section>'
+      : '';
+    var events = n < 4 ? g.pending.map(eventCard).join('') : predictCard();
     var nextLabel = n < 4 ? 'Plan ' + phase(n + 1).name : 'Fast-forward to month 18';
     return statusBar() + '<main class="wrap screen">' +
       '<div class="phase-head"><p class="eyebrow">Pulse check · Month ' + snap.month + '</p><h1 class="title" tabindex="-1">After ' + esc(ph.name.toLowerCase()) + '</h1></div>' +
       adoption +
       '<div class="two-col">' +
-        '<section class="stack"><h2>The Six Conditions</h2>' + healthRows(snap.cond, { prev: prev.cond }) + '<p class="muted small">The thin mark shows where each condition stood at the start of this phase. The red line marks at risk.</p></section>' +
+        '<section class="stack"><h2>The Six Conditions</h2>' + healthRows(snap.cond, { prev: snap.start || prev.cond, why: (g.why || {})[n] }) + '<p class="muted small">The thin mark shows where each condition stood when this phase began, after any event. The red line marks at risk.</p></section>' +
         '<section class="stack"><h2>The people</h2><div class="persona-list">' + people + '</div></section>' +
       '</div>' +
       (voices ? '<section class="stack"><h2>What people are saying</h2><div class="voices">' + voices + '</div>' +
         (snap.visible && snap.visible.sentiment ? '' : '<p class="muted small">Listening sessions and pulse surveys would let you hear more voices.</p>') + '</section>' : '') +
       (sigs ? '<section class="stack"><h2>What you\'re noticing</h2><ul class="signals">' + sigs + '</ul></section>' : '') +
-      events +
-      '<div class="stack"><p class="err" id="continue-err"></p><div class="actions"><button class="btn btn-primary" data-action="continue">' + esc(nextLabel) + '</button></div></div>' +
+      prompt + events +
+      '<div class="stack"><p class="err" id="continue-err" role="alert"></p><div class="actions"><button class="btn btn-primary" data-action="continue">' + esc(nextLabel) + '</button></div></div>' +
     '</main>';
   }
 
@@ -2256,9 +2829,19 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     stuck: 'Nobody runs a campaign for the assistant anymore, and it doesn\'t need one. It has become part of how drafting gets done, and it survived the people who launched it moving on.',
     fragile: 'Most caseworkers still use it, but the support underneath is thin. The next reorganization or budget squeeze could undo it.',
     slipped: 'The launch worked. Then the program office closed, the reminders stopped, and the old way crept back in. Six months on, fewer people use the assistant than at its peak.',
+    slippedUse: 'People tried the assistant at launch. Then the program office closed, the reminders stopped, and the old way crept back in. For most caseworkers it never changed how the work gets done.',
     close: 'Real progress, but not enough to call it done. Some centers use the assistant well. Others never moved past trying it.',
     stalled: 'The assistant is live in every center and the login report looks fine. But for most caseworkers the work hasn\'t changed. Drafts are still written the old way.'
   };
+
+  // How the month-18 prediction turned out. The short form leaves out the numbers.
+  function predictionLine(pr, short) {
+    if (!pr) return '';
+    var said = '', right = pr.said === pr.actual;
+    D.predict.options.forEach(function (o) { if (o.id === pr.said) said = o.said; });
+    if (short || pr.from === undefined) return 'You predicted ' + said + '. ' + (right ? 'You called it.' : 'Not quite.');
+    return 'You predicted ' + said + '. ' + (right ? 'You called it: ' : 'Not quite: ') + 'meaningful use went from ' + pr.from + '% to ' + pr.to + '%.';
+  }
 
   function m18Screen() {
     var g = ui.game, a = S.analyze(g);
@@ -2266,14 +2849,16 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     function mt(label, from, to) {
       var d = pct(to) - pct(from);
       return '<div class="m18-tile"><span class="muted small">' + label + '</span><span class="from">Month 12: ' + pct(from) + '%</span><span class="to num">' + pct(to) + '%</span>' +
-        '<span class="chg ' + (d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat') + '" style="text-align:left">' + (d > 0 ? '+' : '') + d + ' points since month 12</span></div>';
+        '<span class="chg ' + (d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat') + '" style="text-align:left">' + (d > 0 ? '+' : '') + d + (Math.abs(d) === 1 ? ' point' : ' points') + ' since month 12</span></div>';
     }
+    var text = (a.tier === 'slipped' && a.slid === 'use') ? M18_TEXT.slippedUse : M18_TEXT[a.tier];
+    var pred = predictionLine(a.prediction);
     return '<main class="wrap screen">' +
       '<div class="phase-head"><p class="eyebrow">Month 18</p><h1 class="title" tabindex="-1">The program office closed six months ago.</h1>' +
-      '<p class="lead">' + esc(M18_TEXT[a.tier]) + '</p></div>' +
+      '<p class="lead">' + esc(text) + '</p></div>' +
       '<section class="stack"><h2>Six months later</h2><div class="m18-grid">' +
         mt('Meaningful use', m12.val, m18.val) + mt('Active use', m12.used, m18.used) + mt('Logins', m12.logins, m18.logins) +
-      '</div></section>' +
+      '</div>' + (pred ? '<p class="pred">' + esc(pred) + '</p>' : '') + '</section>' +
       '<section class="stack"><h2>The Six Conditions without the program office</h2>' + healthRows(m18.cond, { prev: m12.cond }) +
       '<p class="muted small">The thin mark shows month 12. What you built into workflows, standards, and manager routines is what held.</p></section>' +
       '<div class="actions"><button class="btn btn-primary" data-action="to-debrief">See your debrief</button></div>' +
@@ -2302,25 +2887,41 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     return '<div class="table-scroll"><table class="heat">' + cols + '<thead>' + head + '</thead><tbody>' + body + '</tbody><tfoot>' + foot + '</tfoot></table></div>' + legend;
   }
 
-  function eventRecap(g) {
-    var out = [];
-    ['union', 'headline', 'win', 'sponsor'].forEach(function (id) {
-      var e = g.events[id];
-      if (!e) return;
-      var ev = D.events[id];
-      if (e.option === 'auto') { out.push('<li>' + esc(ev.resolvedTitle) + '<span>Because you engaged the union in Prepare</span></li>'); return; }
-      var o = ev.options.filter(function (x) { return x.id === e.option; })[0];
-      out.push('<li>' + esc(ev.title) + '<span>' + esc(o.label) + (o.cost ? ' (' + o.cost + ' ' + creditsWord(o.cost) + ')' : '') + '</span></li>');
-    });
-    if (g.frozen) out.push('<li>' + esc(D.events.cr.title) + '<span>' + g.frozen + ' credits frozen</span></li>');
-    return out.join('');
-  }
-
   function barRows(items, max) {
     return '<div class="barlist">' + items.map(function (it) {
       var w = max ? Math.round(it.value / max * 100) : 0;
       return '<div class="barrow"><span>' + esc(it.label) + '</span><div class="track" aria-hidden="true"><span class="fill" style="width:' + Math.max(it.value ? 2 : 0, w) + '%"></span></div><span class="bv">' + it.text + '</span></div>';
     }).join('') + '</div>';
+  }
+
+  function usageText(levels) {
+    var parts = [];
+    levels.forEach(function (lv, i) { if (lv) parts.push(phase(i + 1).short + ': ' + D.levelNames[lv]); });
+    return parts.length ? parts.join(' · ') : 'Not used';
+  }
+
+  // The run as a story: each phase's cost, result, signals, and the event that followed.
+  function storyHtml(g, a) {
+    var items = (a.story || []).map(function (p) {
+      var sig = p.signals.map(function (s) { return '<li>' + (s.tone === 'good' ? ICON.good : ICON.warn) + '<span>' + esc(s.text) + '</span></li>'; }).join('');
+      var evs = p.events.map(function (id) {
+        var e = g.events[id], ev = D.events[id];
+        if (e.option === 'auto') return '<p class="st-ev"><b>' + esc(ev.resolvedTitle) + '.</b> Settled early, because you engaged the union in Prepare.</p>';
+        var o = optionOf(id, e.option);
+        return '<p class="st-ev"><b>' + esc(ev.title) + '.</b> You chose: ' + esc(o.label) + (o.cost ? ' (' + o.cost + ' ' + creditsWord(o.cost) + ')' : '') + '.</p>';
+      }).join('');
+      var pre = (p.n === 4 && g.frozen) ? '<p class="st-ev"><b>' + esc(D.events.cr.title) + '.</b> ' + g.frozen + ' ' + creditsWord(g.frozen) + ' frozen before the phase began.</p>' : '';
+      var nums = p.coverage
+        ? 'By month ' + p.end + ': ' + p.val + '% meaningful use and ' + p.used + '% active use, with ' + p.coverage + '% of caseworkers live.'
+        : 'By month ' + p.end + ': nothing live yet.';
+      return '<li><div class="st-head"><h3>' + esc(p.name) + '</h3><span class="muted small">' + esc(p.months) + ' · ' + p.spend + ' ' + creditsWord(p.spend) + (p.load ? ' · workforce load: ' + esc(p.load.toLowerCase()) : '') + '</span></div>' +
+        pre + (p.intent ? '<p class="st-intent">Your aim: “' + esc(p.intent) + '”</p>' : '') +
+        '<p class="st-num">' + nums + '</p>' + (sig ? '<ul class="signals">' + sig + '</ul>' : '') + evs + '</li>';
+    }).join('');
+    var pred = predictionLine(a.prediction, true);
+    items += '<li><div class="st-head"><h3>Month 18</h3><span class="muted small">Six months after the program office closed</span></div>' +
+      '<p class="st-num">Meaningful use went from ' + a.val12 + '% at month 12 to ' + a.val18 + '%.' + (pred ? ' ' + esc(pred) : '') + '</p></li>';
+    return '<ol class="story">' + items + '</ol>';
   }
 
   function debriefScreen() {
@@ -2329,10 +2930,22 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     var tierCls = 'tier tier-' + a.tier;
     var condRows = D.conditions.map(function (c) {
       var v = a.cond18[c.id], st = a.condStart[c.id], weak = c.id === a.weakest;
+      var d = (a.drivers && a.drivers[c.id]) || [];
+      var built = d.length ? 'Built mostly by ' + listAnd(d.map(phrase)) + '.'
+        : c.id === 'adapt' ? 'No lever built it directly. It moved with the workload.' : 'Nothing in your plan built it.';
       return '<div class="health-row"><div><div class="hn">' + esc(c.name) + (weak ? ' <span class="tag">Weakest</span>' : '') + '</div><div class="hq">' + esc(c.question) + '</div></div>' +
         '<div class="track" aria-hidden="true"><span class="riskline" style="left:' + D.riskLine + '%"></span><span class="fill" style="width:' + Math.max(1, Math.round(v)) + '%"></span><span class="ghost" style="left:' + Math.round(st) + '%"></span></div>' +
-        '<div class="health-right"><span class="delta flat num" style="color:var(--ink-2)">' + Math.round(v) + '</span>' + healthChip(v) + '</div></div>';
+        '<div class="health-right"><span class="delta flat num" style="color:var(--ink-2)">' + Math.round(v) + '</span>' + healthChip(v) + '</div>' +
+        '<div class="cond-why">' + esc(built) + '</div></div>';
     }).join('');
+
+    var wb = a.weakBuilders || [];
+    var weakBox = '<div class="callout"><h3>What builds ' + esc(a.weakestName) + ', and what you did with it</h3>' +
+      '<ul class="use-list">' + wb.map(function (b) {
+        var used = b.levels.some(function (x) { return x > 0; });
+        return '<li class="' + (used ? '' : 'unused') + '"><span>' + esc(b.name) + '</span><span>' + esc(usageText(b.levels)) + '</span></li>';
+      }).join('') + '</ul>' +
+      (a.weakest === 'adapt' ? '<p>' + esc(D.adaptNote) + '</p>' : '') + '</div>';
 
     var moveItems = D.moves.map(function (m) { return { label: m.name, value: a.byMove[m.id], text: a.byMove[m.id] + ' · ' + Math.round(a.share[m.id] * 100) + '%' }; });
     var maxMove = Math.max.apply(null, moveItems.map(function (x) { return x.value; }).concat([1]));
@@ -2350,7 +2963,8 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     else if (a.success) archRead += ' It carried all six conditions past month 18.';
 
     var patterns = a.patterns.map(function (p) {
-      return '<li class="' + (p.hit ? 'hit' : 'ok') + '">' + (p.hit ? ICON.warn : ICON.good) + '<div><div class="pt">' + esc(p.name) + '</div><div class="pd">' + esc(p.desc) + '</div><div class="pw">' + (p.hit ? esc(p.where) : 'Avoided') + '</div></div></li>';
+      return '<li class="' + (p.hit ? 'hit' : 'ok') + '">' + (p.hit ? ICON.warn : ICON.good) + '<div><div class="pt">' + esc(p.name) + '</div><div class="pd">' + esc(p.desc) + '</div><div class="pw">' + (p.hit ? esc(p.where) : 'Avoided') + '</div>' +
+        (p.hit && p.fix ? '<div class="pf"><b>Next time:</b> ' + esc(p.fix) + '</div>' : '') + '</div></li>';
     }).join('');
 
     var worked = a.worked.length ? a.worked.map(function (w) {
@@ -2368,14 +2982,20 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         '<p class="tool">Toolkit: <b>' + esc(l.item.tool) + '</b></p><p class="monday"><b>This week:</b> ' + esc(l.item.monday) + '</p></div>';
     }).join('');
 
-    var runs = ui.attempts.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Run</th><th class="l">Outcome</th><th class="l">Pattern</th><th>Meaningful use</th><th>Credits used</th></tr></thead><tbody>' +
+    var runs = ui.attempts.length ? '<div class="table-scroll"><table class="data"><thead><tr><th>Run</th><th class="l">Outcome</th><th class="l">Pattern</th><th class="l">Weakest condition</th><th>Meaningful use</th><th>Credits used</th></tr></thead><tbody>' +
       ui.attempts.map(function (r, i) {
-        return '<tr' + (i === ui.attempts.length - 1 ? ' style="font-weight:650"' : '') + '><td>' + (i + 1) + '</td><td class="l">' + esc(r.title) + '</td><td class="l">' + esc(r.archetype) + '</td><td>' + r.val18 + '%</td><td>' + r.spent + '</td></tr>';
+        return '<tr' + (i === ui.attempts.length - 1 ? ' style="font-weight:650"' : '') + '><td>' + (i + 1) + '</td><td class="l">' + esc(r.title) + '</td><td class="l">' + esc(r.archetype) + '</td><td class="l">' + esc(r.weakest || '') + '</td><td>' + r.val18 + '%</td><td>' + r.spent + '</td></tr>';
       }).join('') + '</tbody></table></div>' : '';
+    var challenges = '<ul class="challenges">' + (a.success ? D.challenges.won : D.challenges.lost).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>';
 
     var seriesTable = '<div class="table-scroll" id="adopt-table" hidden><table class="data"><thead><tr><th>Month</th><th>Deployed</th><th>Logins</th><th>Active use</th><th>Meaningful use</th></tr></thead><tbody>' +
       a.series.map(function (p) { return '<tr><td>' + p.month + '</td><td>' + pct(p.coverage) + '%</td><td>' + pct(p.logins) + '%</td><td>' + pct(p.used) + '%</td><td>' + pct(p.val) + '%</td></tr>'; }).join('') + '</tbody></table></div>';
     var neverMeasured = S.cum(g, 'dashboard', 4) === 0;
+    var credLine = a.credits.levers + ' credits went to activities, ' + a.credits.events + ' to event responses, ' + a.credits.frozen + ' were frozen by the continuing resolution, and ' + a.credits.left + ' went unspent.';
+    var jump = '<nav class="jump no-print" aria-label="On this page">' + [
+      ['d-adoption', 'Adoption'], ['d-conditions', 'Six Conditions'], ['d-plan', 'Your plan'], ['d-patterns', 'Failure patterns'],
+      ['d-learn', 'What to learn next'], ['d-brief', 'Bring-back brief'], ['d-again', 'Try another path']
+    ].map(function (j) { return '<button type="button" class="mv-chip" data-jump="' + j[0] + '">' + j[1] + '</button>'; }).join('') + '</nav>';
 
     var r = ui.reflection;
     return '<main class="wrap screen">' +
@@ -2384,9 +3004,9 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         '<div class="hero-num"><b class="num">' + a.val18 + '%</b><span>meaningful use at month 18. The goal was ' + D.successRate + '%.</span></div>' +
         '<p class="lead">' + esc(a.summary) + '</p></div>' +
         '<div class="next-move"><p class="eyebrow">Your next move</p><p class="nm">' + esc(a.nextMove) + '</p><span class="muted small">' + esc(a.weakestName) + ' was your weakest condition at month 18.</span></div>' +
-      '</section>' +
+      '</section>' + jump +
 
-      '<section class="stack"><div class="section-head"><h2>Adoption over 18 months</h2><p>Meaningful use is what counts. Logins are what most dashboards show.</p></div>' +
+      '<section class="stack" id="d-adoption"><div class="section-head"><h2>Adoption over 18 months</h2><p>Meaningful use is what counts. Logins are what most dashboards show.</p></div>' +
         '<div class="chart-legend"><span><i style="background:var(--s1)"></i>Meaningful use</span><span><i style="background:var(--s2)"></i>Active use</span><span><i style="background:var(--s3)"></i>Logins</span></div>' +
         '<div class="chart-box"><div class="chart" id="adopt-chart" role="img" aria-label="Line chart of meaningful use, active use, and logins from month 0 to month 18."></div></div>' +
         seriesTable +
@@ -2394,16 +3014,11 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         (neverMeasured ? '<p class="muted small">You never funded the early-warning dashboard, so during play you saw only logins and course completions. This is what was happening underneath.</p>' : '') +
       '</section>' +
 
-      '<section class="stack"><div class="section-head"><h2>The Six Conditions at month 18</h2><p>Adoption follows the weakest condition. The thin mark shows where each one started. The red line marks at risk.</p></div>' +
-        '<div class="health-list">' + condRows + '</div></section>' +
+      '<section class="stack-lg" id="d-conditions"><div class="section-head"><h2>The Six Conditions at month 18</h2><p>Adoption follows the weakest condition. The thin mark shows where each one started. The red line marks at risk.</p></div>' +
+        '<div class="health-list">' + condRows + '</div>' + weakBox + '</section>' +
 
-      '<section class="stack-lg"><div class="section-head"><h2>Your plan</h2><p>Every lever you used, by phase.</p></div>' + heatTable(g, 4) +
-        '<div class="cols-2"><div class="stack"><h3>Events</h3><ul class="list-plain">' + eventRecap(g) + '</ul></div>' +
-        '<div class="stack"><h3>Credits</h3><ul class="list-plain">' +
-          '<li>' + a.credits.levers + ' credits on activities<span>Across four phases</span></li>' +
-          '<li>' + a.credits.events + ' credits on event responses<span>' + (a.credits.frozen ? a.credits.frozen + ' more were frozen by the continuing resolution' : 'No credits frozen') + '</span></li>' +
-          '<li>' + a.credits.left + ' credits unspent<span>' + (a.credits.left >= 12 ? 'Room to spare' : 'You used nearly everything') + '</span></li>' +
-        '</ul></div></div></section>' +
+      '<section class="stack-lg" id="d-plan"><div class="section-head"><h2>Your plan</h2><p>Every lever you used, by phase. ' + esc(credLine) + '</p></div>' + heatTable(g, 4) +
+        '<div class="stack"><h3>What happened, phase by phase</h3>' + storyHtml(g, a) + '</div></section>' +
 
       '<section class="cols-2">' +
         '<div class="stack"><div class="section-head"><h2>Spend by move</h2><p>Credits and share of your activity budget.</p></div>' + barRows(moveItems, maxMove) + '</div>' +
@@ -2412,17 +3027,18 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
       '<section class="stack"><div class="section-head"><h2>Your pattern: ' + esc(a.archetype.name) + '</h2><p>' + esc(archRead) + '</p></div></section>' +
 
-      '<section class="stack"><div class="section-head"><h2>How AI adoption usually dies</h2><p>The six failure patterns, plus change on a full plate. Here\'s which ones showed up in your run.</p></div><ul class="patterns">' + patterns + '</ul></section>' +
+      '<section class="stack" id="d-patterns"><div class="section-head"><h2>How AI adoption usually dies</h2><p>The six failure patterns, plus change on a full plate. Here\'s which ones showed up in your run, and what to do about each next time.</p></div><ul class="patterns">' + patterns + '</ul></section>' +
 
       '<section class="cols-2">' +
         '<div class="stack"><h2>What worked</h2><p class="muted small">Your best value per credit.</p><ul class="list-plain">' + worked + '</ul></div>' +
         '<div class="stack"><h2>Where credits leaked</h2><p class="muted small">Credits that bought less than they could have.</p><ul class="list-plain">' + leaks + '</ul></div>' +
       '</section>' +
 
-      '<section class="stack"><div class="section-head"><h2>What to learn next</h2><p>Chosen from your weakest conditions and the patterns in your run.</p></div><div class="learn">' + learn + '</div></section>' +
+      '<section class="stack" id="d-learn"><div class="section-head"><h2>What to learn next</h2><p>Chosen from your weakest conditions and the patterns in your run.</p></div><div class="learn">' + learn + '</div></section>' +
 
-      '<section class="stack-lg"><div class="section-head"><h2>Your bring-back brief</h2><p>Three answers for your own initiative. They\'re saved in this browser and included when you copy your summary.</p></div>' +
+      '<section class="stack-lg" id="d-brief"><div class="section-head"><h2>Your bring-back brief</h2><p>Three answers for your own initiative. They\'re saved in this browser and included when you copy your summary.</p></div>' +
         '<div class="brief">' +
+          '<div class="field"><label for="rf-name">Your name or pod <span class="opt">Optional</span></label><input type="text" id="rf-name" data-field="name" maxlength="60" autocomplete="off" value="' + esc(r.name) + '" placeholder="Pod 3"></div>' +
           '<div class="field"><label for="rf-fix">The condition I\'d strengthen first in my own initiative</label><textarea id="rf-fix" data-field="fix" placeholder="Endorsement. Our section chiefs heard about it at the all-hands.">' + esc(r.fix) + '</textarea></div>' +
           '<div class="field"><label for="rf-pattern">The failure pattern I\'ve seen happen for real</label><textarea id="rf-pattern" data-field="pattern" placeholder="No reinforcement. Use dropped off after the launch month and nobody noticed.">' + esc(r.pattern) + '</textarea></div>' +
           '<div class="field"><label for="rf-move">One thing I\'ll do in the next 7 days</label><textarea id="rf-move" data-field="move" placeholder="List the 15 managers whose teams decide this, by name.">' + esc(r.move) + '</textarea></div>' +
@@ -2433,11 +3049,12 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
         '<div id="copy-fallback"></div>' +
       '</section>' +
 
-      '<section class="stack-lg no-print"><div class="section-head"><h2>Try another path</h2><p>There\'s more than one way to make it stick. See if you can win with a different approach, or with fewer credits.</p></div>' + runs +
-        '<div class="actions"><button class="btn btn-primary" data-action="replay">Try a different path</button><button class="btn" data-action="home">Back to the start</button></div></section>' +
+      '<section class="stack-lg no-print" id="d-again"><div class="section-head"><h2>Try another path</h2><p>There\'s more than one way to make it stick. Your plan is saved, so in each phase of your next run you can load it and change only what you\'d do differently.</p></div>' + runs +
+        '<div class="stack"><h3>' + (a.success ? 'Challenges for your next run' : 'For your next run') + '</h3>' + challenges + '</div>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="replay">Play again</button><button class="btn" data-action="home">Back to the start</button></div></section>' +
 
       '<details class="about"><summary>How the scoring works</summary><div class="read"><ul>' +
-        '<li>Each lever strengthens one or two of the Six Conditions. The tags on each card show which.</li>' +
+        '<li>Each lever strengthens one or more of the Six Conditions. The tags on each card show which.</li>' +
         '<li>Each step up a slider costs the same, but adds less than the step before. Light is the best value per credit. Intensive buys depth at a premium.</li>' +
         '<li>Timing matters. Some levers land well in one phase and poorly in another.</li>' +
         '<li>Some combinations help each other and some backfire: managers briefed before the town hall, labs paired with floor support, standards changed before people can use the tool.</li>' +
@@ -2527,27 +3144,29 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
 
   function summaryText() {
     var g = ui.game, a = lastAnalysis || S.analyze(g), r = ui.reflection, L = [];
-    L.push(D.meta.title + ': my results');
+    L.push(D.meta.title + ': ' + (r.name ? r.name + '\'s results' : 'my results'));
     L.push('Outcome: ' + a.title + '. ' + a.val18 + '% meaningful use at month 18 (goal ' + D.successRate + '%).');
     L.push('Pattern: ' + a.archetype.name);
     L.push('Six Conditions at month 18: ' + S.COND.map(function (id) { return cname(id) + ' ' + S.healthOf(a.cond18[id]).label.toLowerCase(); }).join(', '));
     L.push('Weakest condition: ' + a.weakestName);
     var hits = a.patterns.filter(function (p) { return p.hit; }).map(function (p) { return p.name; });
     L.push('Failure patterns that showed up: ' + (hits.length ? hits.join(', ') : 'none'));
+    var pred = predictionLine(a.prediction);
+    if (pred) L.push('Prediction: ' + pred);
     L.push('');
     L.push('My plan');
     D.phases.forEach(function (p) {
       var plan = g.plans[p.n] || {};
       var items = D.levers.filter(function (l) { return plan[l.id]; }).map(function (l) { return l.name + ' (' + D.levelNames[plan[l.id]] + ')'; });
       L.push('- ' + p.name + ', ' + (g.spend[p.n] || 0) + ' credits: ' + (items.length ? items.join('; ') : 'nothing'));
+      if (g.intents && g.intents[p.n]) L.push('  Aim: ' + g.intents[p.n]);
     });
     ['union', 'headline', 'win', 'sponsor'].forEach(function (id) {
       var e = g.events[id];
       if (!e) return;
       var ev = D.events[id];
       if (e.option === 'auto') { L.push('- Event, ' + ev.title + ': resolved early because the union was engaged in Prepare'); return; }
-      var o = ev.options.filter(function (x) { return x.id === e.option; })[0];
-      L.push('- Event, ' + ev.title + ': ' + o.label);
+      L.push('- Event, ' + ev.title + ': ' + optionOf(id, e.option).label);
     });
     L.push('');
     L.push('What to learn next');
@@ -2565,8 +3184,9 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
   function render() {
     renderTopbar();
     var html;
-    if (ui.view === 'welcome' || !ui.game) html = welcome();
+    if (ui.view === 'help') html = helpScreen();
     else if (ui.view === 'case') html = caseScreen();
+    else if (ui.view === 'welcome' || !ui.game) html = welcome();
     else {
       var st = ui.game.stage;
       html = st === 'plan' ? planScreen() : st === 'pulse' ? pulseScreen() : st === 'm18' ? m18Screen() : debriefScreen();
@@ -2576,18 +3196,28 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     save();
   }
 
-  function go() {
+  // Renders the current screen. With no y it starts at the top and moves focus to the heading.
+  function go(y) {
     render();
-    window.scrollTo(0, 0);
+    window.scrollTo(0, y || 0);
+    if (y) return;
     var h = app.querySelector('h1');
     if (h) { try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+  }
+
+  function scrollToId(id) {
+    var el = document.getElementById(id);
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: SMOOTH, block: 'start' });
   }
 
   function newRun() {
     ui.game = S.newGame();
     ui.game.stage = 'plan';
     ui.draft = {};
+    ui.intent = '';
     ui.choices = {};
+    ui.predict = '';
+    ui.focus = '';
     ui.confirm = false;
     ui.recorded = false;
   }
@@ -2600,39 +3230,99 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     save();
   }
 
+  // Shows only the levers that build one condition. The same condition again, or '', clears it.
+  function setFocus(id) {
+    ui.focus = (id && ui.focus !== id) ? id : '';
+    refreshPlan();
+    if (ui.focus) scrollToId('levers');
+    var btn = document.querySelector && document.querySelector('[data-focus="' + (ui.focus || id) + '"]');
+    if (btn && btn.focus) { try { btn.focus({ preventScroll: true }); } catch (e) { btn.focus(); } }
+  }
+
+  function jumpTo(id) {
+    if (ui.focus && id.indexOf('sec-') === 0) { ui.focus = ''; refreshPlan(); }
+    scrollToId(id);
+  }
+
+  // Opens the case brief or the rules, remembering where to return to.
+  function leaveTo(view) {
+    if (ui.view !== 'case' && ui.view !== 'help') {
+      ui.back = ui.view;
+      scrollBack = window.pageYOffset || 0;
+    }
+    if (view === 'help') ui.helpFrom = ui.view === 'case' ? 'case' : '';
+    ui.view = view;
+    ui.resetAsk = false;
+    go();
+  }
+
+  function loadPlan(plan) {
+    ui.draft = S.cleanPlan(plan, ui.game.phase);
+    ui.confirm = false;
+    refreshPlan();
+  }
+
   var actions = {
-    'read-case': function () {
+    'case': function () { leaveTo('case'); },
+    help: function () { leaveTo('help'); },
+    back: function () {
+      if (ui.helpFrom === 'case') { ui.helpFrom = ''; ui.view = 'case'; go(); return; }
+      var to = ui.back || 'welcome';
+      if (to === 'game' && !ui.game) to = 'welcome';
+      ui.view = to;
+      go(to === 'game' ? scrollBack : 0);
+    },
+    begin: function () {
       if (!ui.game || ui.game.stage === 'debrief') newRun();
-      ui.view = 'case';
-      ui.resetAsk = false;
+      ui.view = 'game';
       go();
     },
-    begin: function () { ui.view = 'game'; go(); },
-    resume: function () { ui.view = 'game'; ui.resetAsk = false; go(); },
+    resume: function () {
+      var y = ui.back === 'game' && (ui.view === 'case' || ui.view === 'help') ? scrollBack : 0;
+      ui.view = 'game';
+      ui.resetAsk = false;
+      go(y);
+    },
     'ask-reset': function () { ui.resetAsk = true; render(); },
     'cancel-reset': function () { ui.resetAsk = false; render(); },
-    reset: function () { ui.game = null; ui.draft = {}; ui.choices = {}; ui.resetAsk = false; ui.view = 'welcome'; go(); },
+    reset: function () { ui.game = null; ui.draft = {}; ui.intent = ''; ui.choices = {}; ui.predict = ''; ui.focus = ''; ui.resetAsk = false; ui.view = 'welcome'; go(); },
     home: function () { ui.view = 'welcome'; go(); },
+    'tips-done': function () {
+      ui.tipsSeen = true;
+      var t = document.getElementById('tips');
+      if (t) t.hidden = true;
+      save();
+    },
+    'copy-last': function () { loadPlan(ui.game.plans[ui.game.phase - 1]); },
+    'copy-run': function () { loadPlan(ui.lastRun.plans[ui.game.phase]); },
+    'clear-plan': function () { loadPlan({}); },
     'to-commit': function () {
       var g = ui.game;
       if (S.planCost(S.cleanPlan(ui.draft, g.phase)) <= g.credits) ui.confirm = true;
       updateStatus();
-      var c = document.getElementById('commit');
-      if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrollToId('commit');
     },
     commit: function () { ui.confirm = true; updateStatus(); },
     'cancel-commit': function () { ui.confirm = false; updateStatus(); },
     'confirm-commit': function () {
+      var g = ui.game, n = g.phase;
       try {
-        S.commitPhase(ui.game, ui.draft);
+        S.commitPhase(g, ui.draft);
       } catch (e) {
         ui.confirm = false;
         updateStatus();
         return;
       }
+      g.intents = g.intents || {};
+      var aim = (ui.intent || '').trim().slice(0, 140);
+      if (aim) g.intents[n] = aim;
       ui.draft = {};
+      ui.intent = '';
       ui.choices = {};
+      ui.predict = '';
+      ui.focus = '';
       ui.confirm = false;
+      ui.tipsSeen = true;
       go();
     },
     'continue': function () {
@@ -2641,18 +3331,22 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       var missing = open.filter(function (p) { return !ui.choices[p.id]; });
       if (missing.length) {
         err.textContent = 'Choose a response to ' + (missing.length > 1 ? 'each event' : 'the event') + ' first.';
-        document.getElementById('ev-' + missing[0].id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        scrollToId('ev-' + missing[0].id);
         return;
       }
-      var total = open.reduce(function (t, p) {
-        var o = D.events[p.id].options.filter(function (x) { return x.id === ui.choices[p.id]; })[0];
-        return t + o.cost;
-      }, 0);
+      if (g.phase === 4 && !ui.predict) {
+        err.textContent = 'Make your prediction first.';
+        scrollToId('predict');
+        return;
+      }
+      var total = open.reduce(function (t, p) { return t + optionOf(p.id, ui.choices[p.id]).cost; }, 0);
       if (total > g.credits) { err.textContent = 'Those responses cost ' + total + ' credits and you have ' + g.credits + '. Pick a cheaper option.'; return; }
       open.forEach(function (p) { S.resolveEvent(g, p.id, ui.choices[p.id]); });
+      if (g.phase === 4) g.prediction = ui.predict;
       S.enterNextPhase(g);
       if (g.stage === 'm18') { S.runMonth18(g); g.stage = 'm18'; }
       ui.choices = {};
+      ui.predict = '';
       go();
     },
     'to-debrief': function () {
@@ -2660,8 +3354,9 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
       g.stage = 'debrief';
       if (!ui.recorded) {
         var a = S.analyze(g);
-        ui.attempts.push({ title: a.title, val18: a.val18, spent: a.credits.levers + a.credits.events, archetype: a.archetype.name });
+        ui.attempts.push({ title: a.title, val18: a.val18, spent: a.credits.levers + a.credits.events, archetype: a.archetype.name, weakest: a.weakestName });
         if (ui.attempts.length > 10) ui.attempts.shift();
+        ui.lastRun = { plans: JSON.parse(JSON.stringify(g.plans)) };
         ui.recorded = true;
       }
       go();
@@ -2688,34 +3383,50 @@ details.about ul { margin: 10px 0 0; padding-left: 20px; color: var(--ink-2); fo
     replay: function () { newRun(); ui.view = 'game'; go(); }
   };
 
-  app.addEventListener('click', function (e) {
-    var set = e.target.closest('[data-set]');
+  function onClick(e) {
+    var t = e.target;
+    var set = t.closest('[data-set]');
     if (set) { setLevel(set.getAttribute('data-for'), +set.getAttribute('data-set')); return; }
-    var b = e.target.closest('[data-action]');
+    var f = t.closest('[data-focus]');
+    if (f) { setFocus(f.getAttribute('data-focus')); return; }
+    var j = t.closest('[data-jump]');
+    if (j) { jumpTo(j.getAttribute('data-jump')); return; }
+    var b = t.closest('[data-action]');
     if (b && actions[b.getAttribute('data-action')]) actions[b.getAttribute('data-action')](b, e);
-  });
+  }
+  app.addEventListener('click', onClick);
+  topbar.addEventListener('click', onClick);
 
   app.addEventListener('input', function (e) {
     var t = e.target;
     if (t.matches('input[type="range"][data-lever]')) setLevel(t.getAttribute('data-lever'), +t.value);
-    else if (t.matches('textarea[data-field]')) { ui.reflection[t.getAttribute('data-field')] = t.value; save(); }
+    else if (t.matches('[data-field]')) { ui.reflection[t.getAttribute('data-field')] = t.value; save(); }
+    else if (t.matches('[data-intent]')) { ui.intent = t.value; save(); }
   });
 
+  function swapCard(id, html, refocus) {
+    var card = document.getElementById(id);
+    if (!card) return;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    card.replaceWith(tmp.firstChild);
+    var again = document.querySelector && document.querySelector(refocus);
+    if (again) again.focus();
+  }
+
   app.addEventListener('change', function (e) {
-    var t = e.target;
-    if (!t.matches('input[type="radio"][data-event]')) return;
-    var id = t.getAttribute('data-event');
-    ui.choices[id] = t.value;
-    var p = ui.game.pending.filter(function (x) { return x.id === id; })[0];
-    var card = document.getElementById('ev-' + id);
-    if (p && card) {
-      var tmp = document.createElement('div');
-      tmp.innerHTML = eventCard(p);
-      card.replaceWith(tmp.firstChild);
-      var again = document.querySelector('input[name="ev-' + id + '"][value="' + t.value + '"]');
-      if (again) again.focus();
+    var t = e.target, err = document.getElementById('continue-err');
+    if (t.matches('input[type="radio"][data-predict]')) {
+      ui.predict = t.value;
+      swapCard('predict', predictCard(), 'input[name="predict"][value="' + t.value + '"]');
+    } else if (t.matches('input[type="radio"][data-event]')) {
+      var id = t.getAttribute('data-event');
+      ui.choices[id] = t.value;
+      var p = ui.game.pending.filter(function (x) { return x.id === id; })[0];
+      if (p) swapCard('ev-' + id, eventCard(p), 'input[name="ev-' + id + '"][value="' + t.value + '"]');
+    } else {
+      return;
     }
-    var err = document.getElementById('continue-err');
     if (err) err.textContent = '';
     save();
   });
